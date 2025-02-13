@@ -1,0 +1,20 @@
+{
+  "sections": [
+    {
+      "title": "个人信息",
+      "content": "{{name}}, {{email}}, {{phone}}"
+    },
+    {
+      "title": "工作经历",
+      "content": "{{work_experience}}"
+    },
+    {
+      "title": "教育背景",
+      "content": "{{education}}"
+    },
+    {
+      "title": "技能",
+      "content": "{{skills}}"
+    }
+  ]
+}
