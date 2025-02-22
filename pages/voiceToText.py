@@ -12,17 +12,27 @@ import queue
 from urllib.parse import urlencode
 from langchain.schema import HumanMessage
 from LLM.chat_glm4 import ChatGLM4
+import ssl
 
 # Xunfei API credentials
 APPID = "414dfd51"        # 替换为您的讯飞应用ID
 APISecret = "OTJmYjQ4YmMzMTVkY2E5MTE5Y2RlY2Mx"  # 替换为您的讯飞API密钥
 APIKey = "bb6f62671318f6009c8c7ba61e088495"       # 替换为您的讯飞API Key
+CERT_PATH = "/path/to/your/certificate.pem"  # 替换为证书文件路径
 
-# XunfeiSTT 类的改进版本
 class XunfeiSTT:
     def __init__(self):
-        # ... (保持原有属性)
-        self.cert_chain = None  # 新增证书链属性
+        self.last_error = None          # 新增属性：记录最后一次错误
+        self.text_queue = queue.Queue()
+        self.recognition = websocket.WebSocketApp(
+            "wss://iat-api.xfyun.cn/v1/voice_recognition",
+            on_open=self.on_open,
+            on_message=self.on_message,
+            on_error=self.on_error,
+            on_close=self.on_close
+        )
+        self.is_running = False
+        self.cert_chain = None  # 证书链
     
     def _load_certificate(self):
         """加载证书文件（包含私钥）"""
@@ -30,31 +40,47 @@ class XunfeiSTT:
             with open(CERT_PATH, "r") as f:
                 self.cert_chain = f.read()
         except Exception as e:
-            raise ValueError(f"证书加载失败: {str(e)}")
+            self.last_error = f"证书加载失败: {str(e)}"
     
     def _generate_signature(self, canonical):
         """生成带证书链的HMAC-SHA256r1签名"""
-        # 解析证书和私钥
+        if not self.cert_chain:
+            raise ValueError("证书未加载或格式错误")
+        
         cert_data = self.cert_chain.encode('utf-8')
-        cert = ssl.PEMCertificate(cert_data)
+        try:
+            cert = ssl.PEMCertificate(cert_data)
+        except Exception as e:
+            self.last_error = f"证书解析失败: {str(e)}"
+            raise
         
         if not hasattr(cert, 'private_key'):
-            raise ValueError("证书文件不包含私钥")
+            self.last_error = "证书不包含私钥"
+            raise ValueError("证书不包含私钥")
         
-        # 创建签名对象
-        signer = crypto.Signer(
-            cert.private_key,
-            signature_algorithm=hashlib.sha256()
-        )
-        signer.update(canonical.encode('utf-8'))
-        signature = signer.sign()
+        try:
+            signer = ssl.Signer(
+                cert.private_key,
+                signature_algorithm=hashlib.sha256()
+            )
+        except Exception as e:
+            self.last_error = f"签名生成失败: {str(e)}"
+            raise
+        
+        try:
+            signer.update(canonical.encode('utf-8'))
+            signature = signer.sign()
+        except Exception as e:
+            self.last_error = f"签名计算失败: {str(e)}"
+            raise
+        
         return base64.b64encode(signature).decode('utf-8')
     
-    def send_request(self, data):
-        # 修正时间戳格式
-        timestamp = datetime.datetime.now().isoformat('T') + 'Z'
+    def on_open(self, ws):
+        if self.last_error:
+            return
         
-        # 构建规范请求头
+        timestamp = datetime.datetime.now().isoformat('T') + 'Z'
         headers_dict = {
             "date": timestamp,
             "host": "iat-api.xfyun.cn",
@@ -64,29 +90,64 @@ class XunfeiSTT:
         sorted_headers = sorted(headers_dict.items(), key=lambda x: x[0])
         canonical = "\n".join([f"{k}:{v}"]) + "\n"
         
-        # 生成签名
-        self._load_certificate()  # 确保证书已加载
-        signature = self._generate_signature(canonical)
+        try:
+            self._load_certificate()
+            signature = self._generate_signature(canonical)
+        except Exception as e:
+            self.last_error = f"请求签名失败: {str(e)}"
+            return
+        
         authorization = f"api_key={APIKey},algorithm=HMAC-SHA256r1,headers=date,host,x-appid,content-type,signature={signature}"
         
-        # 发送请求
-        self.recognition.send(
-            json.dumps({
-                "header": {
-                    "appid": APPID,
-                    "timestamp": timestamp,
-                    "signature": signature
-                },
-                "body": data
-            }),
-            headers={
-                "Authorization": authorization,
-                "Date": timestamp,
-                "Host": "iat-api.xfyun.cn",
-                "X-Appid": APPID,
-                "Content-Type": "application/json"
-            }
-        )
+        try:
+            ws.send(
+                json.dumps({
+                    "header": {
+                        "appid": APPID,
+                        "timestamp": timestamp,
+                        "signature": signature
+                    },
+                    "body": {"engine_type": "online"}
+                }),
+                header=headers_dict
+            )
+        except Exception as e:
+            self.last_error = f"WebSocket连接失败: {str(e)}"
+    
+    def on_message(self, ws, message):
+        if self.last_error:
+            return
+        
+        try:
+            result = json.loads(message)
+            if "result" in result and "sentence" in result["result"]:
+                self.text_queue.put(result["result"]["sentence"])
+            else:
+                self.last_error = f"识别结果解析失败: {message}"
+        except Exception as e:
+            self.last_error = f"消息处理失败: {str(e)}"
+    
+    def on_error(self, ws, error):
+        self.last_error = f"WebSocket错误: {str(error)}"
+        self.is_running = False
+    
+    def on_close(self, ws):
+        self.last_error = "语音识别连接已关闭"
+        self.is_running = False
+    
+    def start_listening(self):
+        if self.is_running:
+            return
+        
+        try:
+            self.recognition.run_forever()
+        except Exception as e:
+            self.last_error = f"语音识别启动失败: {str(e)}"
+    
+    def stop_listening(self):
+        if self.recognition.sock:
+            self.recognition.close()
+
 def main():
     st.title("🎙️ 语音识别与 ChatGLM4 对话")
     
@@ -102,12 +163,7 @@ def main():
     # 添加语音识别控制按钮
     col1, col2 = st.columns([1, 3])
     with col1:
-        voice_button = st.button("🎤 开始/停止语音识别", key="voice_control")
-        if voice_button:
-            if stt.is_running:
-                stt.stop_listening()
-            else:
-                stt.start_listening()
+        voice_button = st.button("🎤 开始/停止语音识别", key="voice_control", on_click=lambda: stt.toggle_listening())
     
     # 显示语音识别状态
     with col2:
@@ -115,7 +171,9 @@ def main():
             "<div style='font-weight:bold; margin-bottom: 5px;'>👂 语音识别状态:</div>",
             unsafe_allow_html=True
         )
-        st.text(f"最后错误: {stt.last_error}" if stt.last_error else "无错误")
+        # 安全访问 last_error 属性
+        error_msg = stt.last_error if hasattr(stt, 'last_error') and stt.last_error else "无错误"
+        st.text(error_msg)
         st.text(f"识别结果队列: {stt.text_queue.qsize()}")
     
     # 文本输入框
