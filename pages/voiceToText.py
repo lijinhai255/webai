@@ -14,9 +14,9 @@ from langchain.schema import HumanMessage
 from LLM.chat_glm4 import ChatGLM4
 
 # Xunfei API credentials
-APPID = "f815c988"        # 替换为您的讯飞应用ID
-APISecret = "ODMwNTc2NDNiOGZiZGZjMTkzNzdhNTc3"  # 替换为您的讯飞API密钥
-APIKey = "657bfe10ef10741f60de4dc728c53353"       # 替换为您的讯飞API Key
+APPID = "414dfd51"        # 替换为您的讯飞应用ID
+APISecret = "OTJmYjQ4YmMzMTVkY2E5MTE5Y2RlY2Mx"  # 替换为您的讯飞API密钥
+APIKey = "bb6f62671318f6009c8c7ba61e088495"       # 替换为您的讯飞API Key
 
 class XunfeiSTT:
     def __init__(self):
