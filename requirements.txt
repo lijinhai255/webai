@@ -9,3 +9,4 @@ zhipuai
 langchain_openai
 pdfplumber
 docx
+exceptions
