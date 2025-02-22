@@ -13,7 +13,7 @@ def main():
     # 初始化会话状态
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
-
+    
     # 添加HTML组件用于语音识别
     components.html(
         """
@@ -35,75 +35,116 @@ def main():
         <script>
         let recognition;
         let isRecording = false;
+        let speechInput = null;
 
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'zh-CN';  // 设置为中文
+        // 初始化语音识别
+        function initRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'zh-CN';
 
-            recognition.onstart = function() {
-                document.getElementById('status').textContent = '正在录音...';
-                document.getElementById('startButton').textContent = '🛑 停止录音';
-                document.getElementById('startButton').style.backgroundColor = '#4CAF50';
-                isRecording = true;
-            };
+                recognition.onstart = () => {
+                    console.log('录音开始');
+                    updateUI(true);
+                };
 
-            recognition.onend = function() {
-                document.getElementById('status').textContent = '录音已停止';
-                document.getElementById('startButton').textContent = '🎤 开始录音';
-                document.getElementById('startButton').style.backgroundColor = '#ff4b4b';
-                isRecording = false;
-            };
+                recognition.onerror = (event) => {
+                    console.error('录音错误:', event.error);
+                    updateUI(false, `错误: ${event.error}`);
+                };
 
-            recognition.onresult = function(event) {
-                let final_transcript = '';
-                let interim_transcript = '';
+                recognition.onresult = (event) => {
+                    processTranscript(event.results);
+                };
 
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        final_transcript += event.results[i][0].transcript;
-                        // 将结果发送到Streamlit
-                        window.parent.postMessage({
-                            type: 'speech_recognition',
-                            text: final_transcript
-                        }, '*');
-                    } else {
-                        interim_transcript += event.results[i][0].transcript;
-                    }
+                recognition.onend = () => {
+                    console.log('录音结束');
+                    updateUI(false);
+                };
+            } else {
+                alert('浏览器不支持语音识别功能，请使用Chrome浏览器');
+            }
+        }
+
+        // 更新界面状态
+        function updateUI(isRecording, errorMessage = '') {
+            document.getElementById('status').textContent = errorMessage || 
+                (isRecording ? '正在录音...' : '录音已停止');
+            
+            document.getElementById('startButton').textContent = 
+                isRecording ? '🛑 停止录音' : '🎤 开始录音';
+            document.getElementById('startButton').style.backgroundColor = 
+                isRecording ? '#4CAF50' : '#ff4b4b';
+        }
+
+        // 处理识别结果
+        function processTranscript(results) {
+            let final_transcript = '';
+            results.forEach(result => {
+                if (result.isFinal) {
+                    final_transcript += result[0].transcript;
                 }
-
-                document.getElementById('result').innerHTML = 
-                    (interim_transcript ? '临时结果: ' + interim_transcript : '') +
-                    (final_transcript ? '<br>最终结果: ' + final_transcript : '');
-            };
-
-            recognition.onerror = function(event) {
-                document.getElementById('status').textContent = '错误: ' + event.error;
-            };
+            });
+            
+            // 显示实时结果
+            document.getElementById('result').innerHTML = `
+                <div>临时结果: ${interimResult}</div>
+                <div>最终结果: ${final_transcript}</div>
+            `;
+            
+            // 发送最终结果到后端
+            if (final_transcript.trim()) {
+                window.parent.postMessage({
+                    type: 'speech_recognition',
+                    text: final_transcript
+                }, '*');
+            }
         }
 
         function startSpeechRecognition() {
-            if (!recognition) {
-                alert('您的浏览器不支持语音识别功能');
-                return;
-            }
-
+            if (!recognition) initRecognition();
+            
             if (isRecording) {
                 recognition.stop();
             } else {
                 recognition.start();
             }
         }
+
+        // 初始化隐藏输入框用于接收语音结果
+        window.onload = () => {
+            speechInput = document.createElement('input');
+            speechInput.style.display = 'none';
+            speechInput.id = 'voice-input';
+            document.body.appendChild(speechInput);
+            
+            // 监听消息事件
+            window.addEventListener('message', (e) => {
+                if (e.data.type === 'speech_recognition') {
+                    speechInput.value = e.data.text;
+                    st.session_state.speech_text = e.data.text;
+                    st.experimental_rerun();
+                }
+            });
+        }
         </script>
         """,
-        height=150,
+        height=250,
     )
 
-    # 文本输入框
-    user_input = st.chat_input("输入文字或使用语音...")
+    # 绑定隐藏输入框到文本输入处理
+    if st.session_state.get('speech_text'):
+        process_input(st.session_state['speech_text'])
+        st.session_state['speech_text'] = None
 
-    # 处理文本输入
+    # 文本输入框（包含隐藏的语音输入）
+    user_input = st.chat_input("输入文字或使用语音...", 
+                             key='user_input',
+                             help="按回车发送或点击麦克风按钮说话")
+
+    # 处理输入文本
     if user_input:
         process_input(user_input)
 
@@ -143,22 +184,5 @@ def process_input(text):
             "content": response_text
         })
 
-# 添加JavaScript回调处理器
-def handle_speech_input():
-    components.html(
-        """
-        <script>
-        window.addEventListener('message', function(e) {
-            if (e.data.type === 'speech_recognition') {
-                // 将识别结果发送到Streamlit后端
-                window.parent.Streamlit.setComponentValue(e.data.text);
-            }
-        });
-        </script>
-        """,
-        height=0,
-    )
-
 if __name__ == "__main__":
     main()
-    handle_speech_input()
