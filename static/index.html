@@ -188,7 +188,7 @@
     <!--  逻辑层  -->
     <script>
       // 创建WebSocket对象并指定服务器地址
-      var socket = new WebSocket("ws://localhost:8088");
+      var socket = new WebSocket("ws://localhost:8000/ws/chat/glm4");
       // var socket = new WebSocket("ws://192.168.188.189:9080/");
       // 监听连接建立事件
       socket.onopen = function () {
@@ -458,19 +458,19 @@
               // sendMessage({ type: 'open_panel', value: 'ZHGD' })
               get("/dtai?user_text=" + this.textvalues)
                 .then((res) => {
+                  console.log(res, "res-res");
                   this.isLoading = false;
                   this.textvalues = "";
 
-                  this.conversationArray.push({
-                    role: "assistant",
-                    content: res?.data?.val || "好的",
-                    isActive: true,
-                  });
-
-                  if (res?.data?.type === "content") {
+                  if (res?.type === "content") {
                     console.log("content");
                     // 如果是问答，打开语音面板
-                    sendMessage({ type: "open_Voice_panel" });
+                    // sendMessage({ type: "open_Voice_panel" });
+                    this.conversationArray.push({
+                      role: "assistant",
+                      content: res?.val || "好的",
+                      isActive: true,
+                    });
                   }
 
                   connectWebSocket(res?.data?.val || "好的");

@@ -55,3 +55,11 @@ class ChatGLM4(LLM):
         )
         for chunk in response:
             yield chunk.choices[0].delta.content
+# 在ChatGLM4类中添加
+    async def async_generate(self, user_text: str):
+        response = self.client.chat.completions.create(
+            model="glm-4",
+            messages=[{"role": "user", "content": user_text}],
+            stream=False
+        )
+        return response.choices[0].message.content
