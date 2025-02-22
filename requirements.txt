@@ -8,3 +8,4 @@ matplotlib
 zhipuai
 langchain_openai
 pdfplumber
+docx
