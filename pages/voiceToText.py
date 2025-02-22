@@ -8,12 +8,12 @@ import json
 import time
 import threading
 import queue
+import pyaudio
+import wave
 from urllib.parse import urlencode
-import requests
 from langchain.schema import HumanMessage
 from LLM.chat_glm4 import ChatGLM4
 
-# Xunfei API credentials - 请替换为您的实际凭证
 APPID = "f815c988"
 APISecret = "ODMwNTc2NDNiOGZiZGZjMTkzNzdhNTc3"
 APIKey = "657bfe10ef10741f60de4dc728c53353"
@@ -24,6 +24,9 @@ class XunfeiSTT:
         self.text_queue = queue.Queue()
         self.is_running = False
         self.ws = None
+        self.audio = pyaudio.PyAudio()
+        self.stream = None
+        self.frames = []
         
     def create_url(self):
         now = datetime.datetime.now()
@@ -63,10 +66,14 @@ class XunfeiSTT:
 
     def on_close(self, ws, close_status_code, close_msg):
         self.is_running = False
+        if self.stream:
+            self.stream.stop_stream()
+            self.stream.close()
         st.warning("语音识别连接已关闭")
 
     def on_open(self, ws):
         def send_data():
+            # 发送开始参数
             params = {
                 "common": {"app_id": APPID},
                 "business": {
@@ -84,10 +91,31 @@ class XunfeiSTT:
             }
             try:
                 ws.send(json.dumps(params))
+                
+                # 开始录音并发送音频数据
+                self.stream = self.audio.open(
+                    format=pyaudio.paInt16,
+                    channels=1,
+                    rate=16000,
+                    input=True,
+                    frames_per_buffer=1600,  # 50ms的数据
+                    stream_callback=self.audio_callback
+                )
+                self.stream.start_stream()
+                
             except Exception as e:
                 st.error(f"Error sending initial parameters: {str(e)}")
 
         threading.Thread(target=send_data).start()
+
+    def audio_callback(self, in_data, frame_count, time_info, status):
+        if self.ws and self.is_running:
+            try:
+                # 发送音频数据
+                self.ws.send(in_data, websocket.ABNF.OPCODE_BINARY)
+            except Exception as e:
+                st.error(f"Error sending audio data: {str(e)}")
+        return (in_data, pyaudio.paContinue)
 
     def start_listening(self):
         """启动语音识别"""
@@ -108,9 +136,12 @@ class XunfeiSTT:
 
     def stop_listening(self):
         """停止语音识别"""
+        self.is_running = False
+        if self.stream:
+            self.stream.stop_stream()
+            self.stream.close()
         if self.ws:
             self.ws.close()
-        self.is_running = False
 
 def main():
     st.title("🎙️ 语音识别与 ChatGLM4 对话")
@@ -136,6 +167,10 @@ def main():
                 st.session_state.stt.stop_listening()
                 st.warning("⚠️ 语音识别已停止")
 
+    # 显示语音识别状态
+    if st.session_state.stt.is_running:
+        st.info("🎤 正在录音...")
+
     # 文本输入框
     user_input = st.chat_input("输入文字或使用语音...")
 
@@ -153,13 +188,17 @@ def main():
         try:
             while True:
                 text = st.session_state.stt.text_queue.get_nowait()
-                process_input(text, st.session_state.chat_glm)
-                st.experimental_rerun()
+                if text.strip():  # 只处理非空文本
+                    process_input(text, st.session_state.chat_glm)
+                    st.experimental_rerun()
         except queue.Empty:
             pass
 
 def process_input(text, chat_glm):
     """处理输入文本并获取模型响应"""
+    if not text.strip():
+        return
+        
     # 添加用户输入到历史记录
     st.session_state.chat_history.append({
         "role": "user",
