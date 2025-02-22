@@ -9,4 +9,3 @@ zhipuai>=2.1.5.20250106
 langchain_openai>=0.3.6
 pdfplumber>=0.11.5
 docx==0.2.4
-python-docx>=3.0.0
