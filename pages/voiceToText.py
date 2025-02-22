@@ -1,7 +1,5 @@
 import streamlit as st
+from streamlit.components.v1 import html
 
-# 从 static 目录加载完整的 HTML 文件
 html_content = open("static/index.html").read()
-
-# 使用 st.components.html 渲染 HTML
-st.components.html(html_content, height=800)
+st.html(html_content, height=800)
