@@ -1,7 +1,7 @@
 import streamlit as st
 from zhipuai import ZhipuAI
 import pdfplumber
-from docx import Document  # Use this instead of import docx
+import docx
 import os
 
 # ✅ 1. 初始化 ZhipuAI（智谱AI）客户端

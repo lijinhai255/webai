@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 import os
 import pdfplumber
-from docx import Document  # Use this instead of import docx
+import docx
 from dotenv import load_dotenv
 
 # ✅ 1. 加载环境变量
@@ -18,7 +18,7 @@ import streamlit as st
 import openai
 import os
 import pdfplumber
-from docx import Document  # Use this instead of import docx
+import docx
 from dotenv import load_dotenv
 
 # ✅ 1. 加载环境变量
