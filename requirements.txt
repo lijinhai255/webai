@@ -4,3 +4,6 @@ langchain
 python-dotenv
 pandas
 PyPDF2
+matplotlib
+zhipuai
+langchain_openai
