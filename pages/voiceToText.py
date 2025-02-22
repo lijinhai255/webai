@@ -152,11 +152,18 @@ def main():
                 stt.start_listening()
     
     # 显示语音识别状态
-    with col2:
-        st.text("语音识别状态:", style="font-weight:bold")
-        st.text(f"最后错误: {stt.last_error}" if stt.last_error else "无错误")
-        st.text(f"识别结果队列: {stt.text_queue.qsize()}")
+  with col2:
+    # 使用markdown和内联样式实现加粗
+    st.markdown("语音识别状态:", unsafe_allow_html=True)
+    st.markdown(f"<span style='font-weight:bold;'>语音识别状态:</span>", unsafe_allow_html=True)
+    # 或者更简单的：
+    st.markdown("语音识别状态:", style='font-weight:bold', unsafe_allow_html=True)
     
+    # 显示错误信息
+    st.text(f"最后错误: {stt.last_error}" if stt.last_error else "无错误")
+    
+    # 显示队列长度
+    st.text(f"识别结果队列: {stt.text_queue.qsize()}")
     # 文本输入框
     user_input = st.chat_input("输入文字或使用语音...", key='user_input')
     
