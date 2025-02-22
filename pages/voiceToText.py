@@ -1,5 +1,6 @@
 import streamlit as st
-from streamlit.components.v1 import html
 
-html_content = open("static/index.html").read()
-st.html(html_content, height=800)
+with open("static/index.html") as f:
+    html_content = f.read()
+
+st.markdown(html_content, unsafe_allow_html=True)
