@@ -154,11 +154,10 @@ def main():
     # 显示语音识别状态
   with col2:
     # 使用markdown和内联样式实现加粗
-    st.markdown("语音识别状态:", unsafe_allow_html=True)
-    st.markdown(f"<span style='font-weight:bold;'>语音识别状态:</span>", unsafe_allow_html=True)
-    # 或者更简单的：
-    st.markdown("语音识别状态:", style='font-weight:bold', unsafe_allow_html=True)
-    
+    st.markdown(
+    "<div style='font-weight:bold; margin-bottom: 5px;'>👂 语音识别状态:</div>",
+    unsafe_allow_html=True
+   
     # 显示错误信息
     st.text(f"最后错误: {stt.last_error}" if stt.last_error else "无错误")
     
