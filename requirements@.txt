@@ -1,0 +1,12 @@
+streamlit
+openai
+langchain
+python-dotenv
+pandas
+PyPDF2
+matplotlib
+zhipuai
+langchain_openai
+pdfplumber
+docx
+exceptions
