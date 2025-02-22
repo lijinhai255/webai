@@ -1,105 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>机器人</title>
+    <!-- 引入ElementUI样式 -->
+    <link rel="stylesheet" href="static/css/eleindex.css" />
+    <link rel="stylesheet" href="static/css/index.css" />
+    <!-- 引入ElementUI组件必须先引入Vue -->
+    <script src="static/js/vue@2.js"></script>
+    <!-- 引入ElementUI组件库 -->
+    <script src="static/js/eleindex.js"></script>
+    <!-- 引入刚刚下载的 ECharts 文件 -->
+    <script src="static/js/echarts.min.js"></script>
+    <script src="static/js/axios.min.js"></script>
+    <script src="static/js/crypto-js.min.js"></script>
+    <!-- <script src="static/js/transcode.worker.js"></script> -->
+    <script src="static/js/xf-voice-dictation.js"></script>
+    <script src="static/js/request.js"></script>
+    <!-- 语音插件 -->
+    <script src="static/js/base64.js"></script>
+    <script src="static/js/crypto-js.js"></script>
+    <script src="static/js/index.umd.js"></script>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <title>机器人</title>
-  <!-- 引入ElementUI样式 -->
-  <link rel="stylesheet" href="./css/eleindex.css">
-  <link rel="stylesheet" href="./css/index.css">
-  <!-- 引入ElementUI组件必须先引入Vue -->
-  <script src="./js/vue@2.js"></script>
-  <!-- 引入ElementUI组件库 -->
-  <script src="./js/eleindex.js"></script>
-  <!-- 引入刚刚下载的 ECharts 文件 -->
-  <script src="./js/echarts.min.js"></script>
-  <script src="./js/axios.min.js"></script>
-  <script src="./js/crypto-js.min.js"></script>
-  <!-- <script src="./js/transcode.worker.js"></script> -->
-  <script src="./js/xf-voice-dictation.js"></script>
-  <script src="./js/request.js"></script>
-  <!-- 语音插件 -->
-  <script src="./js/base64.js"></script>
-  <script src="./js/crypto-js.js"></script>
-  <script src="./js/index.umd.js"></script> 
-</head>
-
-<body>
-  <div id="app">
-    <div class="box">
-      <div class="box_l" :class="{'longBox':isShowLong}">
-        <div class="box_content" :class="{'longBox_content':isShowLong}" ref="conversationList">
-          <!--引导语开始-->
-          <div class="guide">
-            <div class="guide-avatar">
-              <img src="./img/test2.png" alt="头像" style="width: 100%;height: 100%;">
-            </div>
-            <div class="guide-text" style="margin-left: 16px">
-              <img src="./img/DialogBox/hyy.png" alt="欢迎语" style="width: 100%;height: 100%;">
-            </div>
-          </div>
-
-          <div class="content_l" v-if="isArray">
-            <span class="loading" v-if="isLoading" v-loading="isLoading" element-loading-text=""
-              element-loading-spinner="el-icon-loading"></span>
-            <template v-for="(item, index) in conversationArray" :key="index">
-              <div v-if="item.role === 'user'" class="user-input-wrapper">
-                <div>
-                  <span class="person2">{{item.content}}</span>
-                  <img src="./img/test1.png" class="icons" style="margin-left: 5px;width: 46px;height: 32px;;">
-                </div>
+  <body>
+    <div id="app">
+      <div class="box">
+        <div class="box_l" :class="{'longBox':isShowLong}">
+          <div
+            class="box_content"
+            :class="{'longBox_content':isShowLong}"
+            ref="conversationList"
+          >
+            <!--引导语开始-->
+            <div class="guide">
+              <div class="guide-avatar">
+                <img
+                  src="static/img/test2.png"
+                  alt="头像"
+                  style="width: 100%; height: 100%"
+                />
               </div>
-              <div v-else class="assistant-input-wrapper">
-                <div style="justify-content:flex-start">
-                  <img src="./img/test2.png" class="icons" style="margin-right: 5px;width: 46px;height: 32px;">
-                  <div class="person1">
-                    <div class="person">
-                      <span :class="{ 'active': item.isActive}">{{item.content}}</span>
-                      <div style="display: flex;justify-content: right;align-items: center">
-                        <div style="width: 30px;height: 30px;cursor: pointer;">
-                          <img src="./img/laba.png" alt="" style="width: 100%;height: 100%;">
+              <div class="guide-text" style="margin-left: 16px">
+                <img
+                  src="static/img/DialogBox/hyy.png"
+                  alt="欢迎语"
+                  style="width: 100%; height: 100%"
+                />
+              </div>
+            </div>
+
+            <div class="content_l" v-if="isArray">
+              <span
+                class="loading"
+                v-if="isLoading"
+                v-loading="isLoading"
+                element-loading-text=""
+                element-loading-spinner="el-icon-loading"
+              ></span>
+              <template v-for="(item, index) in conversationArray" :key="index">
+                <div v-if="item.role === 'user'" class="user-input-wrapper">
+                  <div>
+                    <span class="person2">{{item.content}}</span>
+                    <img
+                      src="static/img/test1.png"
+                      class="icons"
+                      style="margin-left: 5px; width: 46px; height: 32px"
+                    />
+                  </div>
+                </div>
+                <div v-else class="assistant-input-wrapper">
+                  <div style="justify-content: flex-start">
+                    <img
+                      src="static/img/test2.png"
+                      class="icons"
+                      style="margin-right: 5px; width: 46px; height: 32px"
+                    />
+                    <div class="person1">
+                      <div class="person">
+                        <span :class="{ 'active': item.isActive}"
+                          >{{item.content}}</span
+                        >
+                        <div
+                          style="
+                            display: flex;
+                            justify-content: right;
+                            align-items: center;
+                          "
+                        >
+                          <div
+                            style="width: 30px; height: 30px; cursor: pointer"
+                          >
+                            <img
+                              src="static/img/laba.png"
+                              alt=""
+                              style="width: 100%; height: 100%"
+                            />
+                          </div>
+                          <div
+                            @click="allData"
+                            style="font-size: 12px; cursor: pointer"
+                            id="pageButton"
+                          >
+                            点击关闭播报
+                          </div>
                         </div>
-                        <div @click='allData' style="font-size: 12px;cursor: pointer;" id="pageButton">点击关闭播报</div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </template>
+              </template>
+            </div>
           </div>
-        </div>
-        <div class="inputContainer">
-          <!--修改版开始-->
-          <div class="Dialogue" :class="{'no-events-div':isShowMessage}">
-            <div class="Dialogue-nei">
-              <div class="Dialogue-nei-all" style="display: flex;align-items: center">
-                <div class="Dialogue-nei-all-input">
-                  <input placeholder="您有什么问题可以咨询我哦～" autocomplete="off" class="speak-control input" v-model="textvalues"
-                    id="textarea" @keyup.enter="sendext" style="background: transparent;width: 97%" />
-                </div>
-                <div class="Dialogue-nei-all-but">
-                  <!--语音开始-->
-                  <!--右侧第一部分开始-->
-                  <div v-if="istext" class="Dialogue-nei-all-but-yin">
-                    <img src="./img/DialogBox/yy2.gif" alt="语音" style="width: 60px;height: 20px;">
+          <div class="inputContainer">
+            <!--修改版开始-->
+            <div class="Dialogue" :class="{'no-events-div':isShowMessage}">
+              <div class="Dialogue-nei">
+                <div
+                  class="Dialogue-nei-all"
+                  style="display: flex; align-items: center"
+                >
+                  <div class="Dialogue-nei-all-input">
+                    <input
+                      placeholder="您有什么问题可以咨询我哦～"
+                      autocomplete="off"
+                      class="speak-control input"
+                      v-model="textvalues"
+                      id="textarea"
+                      @keyup.enter="sendext"
+                      style="background: transparent; width: 97%"
+                    />
                   </div>
-                  <!--右侧第二部分开始-->
-                  <div class="Dialogue-nei-all-but-Voice" style="margin-left: 20px;" v-if="isspeacks">
-                    <img src="./img/DialogBox/yy1.png" alt="语音" style="width: 22px;height: 22px;" @click="toggletext()"
-                      id="volumeButton">
-                  </div>
-                  <div v-if="istext" style="margin-left: 50px;">
-                    <img src="./img/DialogBox/yy3.png" alt="语音开始" style="height: 20px;width: 20px;"
-                      @click="toggletext()" id="volumeButton">
-                  </div>
-                  <!--语音结束-->
-                  <div class="Dialogue-nei-all-but-line">|</div>
-                  <button class="Dialogue-nei-all-button" @click="sendext()">
-                    <div class="Dialogue-nei-all-button-icon">
-                      <img src="./img/DialogBox/fs.png" alt="发送" style="width: 15px;height: 15px;">
+                  <div class="Dialogue-nei-all-but">
+                    <!--语音开始-->
+                    <!--右侧第一部分开始-->
+                    <div v-if="istext" class="Dialogue-nei-all-but-yin">
+                      <img
+                        src="static/img/DialogBox/yy2.gif"
+                        alt="语音"
+                        style="width: 60px; height: 20px"
+                      />
                     </div>
-                    发送
-                  </button>
+                    <!--右侧第二部分开始-->
+                    <div
+                      class="Dialogue-nei-all-but-Voice"
+                      style="margin-left: 20px"
+                      v-if="isspeacks"
+                    >
+                      <img
+                        src="static/img/DialogBox/yy1.png"
+                        alt="语音"
+                        style="width: 22px; height: 22px"
+                        @click="toggletext()"
+                        id="volumeButton"
+                      />
+                    </div>
+                    <div v-if="istext" style="margin-left: 50px">
+                      <img
+                        src="static/img/DialogBox/yy3.png"
+                        alt="语音开始"
+                        style="height: 20px; width: 20px"
+                        @click="toggletext()"
+                        id="volumeButton"
+                      />
+                    </div>
+                    <!--语音结束-->
+                    <div class="Dialogue-nei-all-but-line">|</div>
+                    <button class="Dialogue-nei-all-button" @click="sendext()">
+                      <div class="Dialogue-nei-all-button-icon">
+                        <img
+                          src="static/img/DialogBox/fs.png"
+                          alt="发送"
+                          style="width: 15px; height: 15px"
+                        />
+                      </div>
+                      发送
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -107,450 +184,443 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!--  逻辑层  -->
-  <script>
-    // 创建WebSocket对象并指定服务器地址
-    var socket = new WebSocket("ws://localhost:8088");
-    // var socket = new WebSocket("ws://192.168.188.189:9080/");
-    // 监听连接建立事件
-    socket.onopen = function () {
-      console.log("WebSocket连接已建立");
-    };
-    // 监听接收到服务器发送的消息
-    socket.onmessage = function (event) {
-      console.log(event.data);
-    };
-    // 监听连接关闭事件
-    socket.onclose = function (event) {
-      console.log("WebSocket连接已关闭");
-    };
-    // 监听连接错误事件
-    socket.onerror = function (event) {
-      console.error("WebSocket连接错误：" + event)
-    }
-    // 发送消息到服务器
-    function sendMessage(message) {
-      socket.send(JSON.stringify(message));
-    }
-
-    // 科大讯飞的配置参数
-    const APPID = "f815c988";
-    const API_SECRET = "ODMwNTc2NDNiOGZiZGZjMTkzNzdhNTc3";
-    const API_KEY = "657bfe10ef10741f60de4dc728c53353";
-    function getWebSocketUrl(apiKey, apiSecret) {
-      var url = "wss://tts-api.xfyun.cn/v2/tts";
-      var host = location.host;
-      var date = new Date().toGMTString();
-      var algorithm = "hmac-sha256";
-      var headers = "host date request-line";
-      var signatureOrigin = `host: ${host}\ndate: ${date}\nGET /v2/tts HTTP/1.1`;
-      var signatureSha = CryptoJS.HmacSHA256(signatureOrigin, apiSecret);
-      var signature = CryptoJS.enc.Base64.stringify(signatureSha);
-      var authorizationOrigin = `api_key="${apiKey}", algorithm="${algorithm}", headers="${headers}", signature="${signature}"`;
-      var authorization = btoa(authorizationOrigin);
-      url = `${url}?authorization=${authorization}&date=${date}&host=${host}`;
-      return url;
-    }
-
-    function encodeText(text, type) {
-      if (type === "unicode") {
-        let buf = new ArrayBuffer(text.length * 4);
-        let bufView = new Uint16Array(buf);
-        for (let i = 0, strlen = text.length; i < strlen; i++) {
-          bufView[i] = text.charCodeAt(i);
-        }
-        let binary = "";
-        let bytes = new Uint8Array(buf);
-        let len = bytes.byteLength;
-        for (let i = 0; i < len; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        return window.btoa(binary);
-      } else {
-        return Base64.encode(text);
-      }
-    }
-    let ttsWS;
-    const audioPlayer = new AudioPlayer("../Voice/dist");
-
-    function connectWebSocket(datas) {
-      const url = getWebSocketUrl(API_KEY, API_SECRET);
-      if ("WebSocket" in window) {
-        ttsWS = new WebSocket(url);
-      } else if ("MozWebSocket" in window) {
-        ttsWS = new MozWebSocket(url);
-      } else {
-        alert("浏览器不支持WebSocket");
-        return;
-      }
-      ttsWS.onopen = (e) => {
-        audioPlayer.start({
-          autoPlay: true,
-          sampleRate: 16000,
-          resumePlayDuration: 1000
-        });
-        var text = datas || "请输入您要合成的文本";
-        var tte = "UTF8";
-        var params = {
-          common: {
-            app_id: APPID,
-          },
-          business: {
-            aue: "raw",
-            auf: "audio/L16;rate=16000",
-            vcn: 'x4_lingxiaoyao_en',
-            speed: 50,
-            volume: 50,
-            pitch: 50,
-            bgs: 0,
-            tte,
-            // vad_eos:1000,   //控制收音结束
-          },
-          data: {
-            status: 2,
-            text: encodeText(text),
-          },
-        };
-        ttsWS.send(JSON.stringify(params));
+    <!--  逻辑层  -->
+    <script>
+      // 创建WebSocket对象并指定服务器地址
+      var socket = new WebSocket("ws://localhost:8088");
+      // var socket = new WebSocket("ws://192.168.188.189:9080/");
+      // 监听连接建立事件
+      socket.onopen = function () {
+        console.log("WebSocket连接已建立");
       };
-      ttsWS.onmessage = (e) => {
-        let jsonData = JSON.parse(e.data);
-        // 合成失败
-        if (jsonData.code !== 0) {
+      // 监听接收到服务器发送的消息
+      socket.onmessage = function (event) {
+        console.log(event.data);
+      };
+      // 监听连接关闭事件
+      socket.onclose = function (event) {
+        console.log("WebSocket连接已关闭");
+      };
+      // 监听连接错误事件
+      socket.onerror = function (event) {
+        console.error("WebSocket连接错误：" + event);
+      };
+      // 发送消息到服务器
+      function sendMessage(message) {
+        socket.send(JSON.stringify(message));
+      }
+
+      // 科大讯飞的配置参数
+      const APPID = "f815c988";
+      const API_SECRET = "ODMwNTc2NDNiOGZiZGZjMTkzNzdhNTc3";
+      const API_KEY = "657bfe10ef10741f60de4dc728c53353";
+      function getWebSocketUrl(apiKey, apiSecret) {
+        var url = "wss://tts-api.xfyun.cn/v2/tts";
+        var host = location.host;
+        var date = new Date().toGMTString();
+        var algorithm = "hmac-sha256";
+        var headers = "host date request-line";
+        var signatureOrigin = `host: ${host}\ndate: ${date}\nGET /v2/tts HTTP/1.1`;
+        var signatureSha = CryptoJS.HmacSHA256(signatureOrigin, apiSecret);
+        var signature = CryptoJS.enc.Base64.stringify(signatureSha);
+        var authorizationOrigin = `api_key="${apiKey}", algorithm="${algorithm}", headers="${headers}", signature="${signature}"`;
+        var authorization = btoa(authorizationOrigin);
+        url = `${url}?authorization=${authorization}&date=${date}&host=${host}`;
+        return url;
+      }
+
+      function encodeText(text, type) {
+        if (type === "unicode") {
+          let buf = new ArrayBuffer(text.length * 4);
+          let bufView = new Uint16Array(buf);
+          for (let i = 0, strlen = text.length; i < strlen; i++) {
+            bufView[i] = text.charCodeAt(i);
+          }
+          let binary = "";
+          let bytes = new Uint8Array(buf);
+          let len = bytes.byteLength;
+          for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          return window.btoa(binary);
+        } else {
+          return Base64.encode(text);
+        }
+      }
+      let ttsWS;
+      const audioPlayer = new AudioPlayer(".static/Voice/dist");
+
+      function connectWebSocket(datas) {
+        const url = getWebSocketUrl(API_KEY, API_SECRET);
+        if ("WebSocket" in window) {
+          ttsWS = new WebSocket(url);
+        } else if ("MozWebSocket" in window) {
+          ttsWS = new MozWebSocket(url);
+        } else {
+          alert("浏览器不支持WebSocket");
           return;
         }
-        audioPlayer.postMessage({
-          type: "base64",
-          data: jsonData.data.audio,
-          isLastData: jsonData.data.status === 2,
-        });
-        if (jsonData.code === 0 && jsonData.data.status === 2) {
-          ttsWS.close();
-          vm.closed()
-        }
-      };
-      ttsWS.onerror = (e) => {
-        console.error(e);
-      };
-      ttsWS.onclose = (e) => { };
-    }
+        ttsWS.onopen = (e) => {
+          audioPlayer.start({
+            autoPlay: true,
+            sampleRate: 16000,
+            resumePlayDuration: 1000,
+          });
+          var text = datas || "请输入您要合成的文本";
+          var tte = "UTF8";
+          var params = {
+            common: {
+              app_id: APPID,
+            },
+            business: {
+              aue: "raw",
+              auf: "audio/L16;rate=16000",
+              vcn: "x4_lingxiaoyao_en",
+              speed: 50,
+              volume: 50,
+              pitch: 50,
+              bgs: 0,
+              tte,
+              // vad_eos:1000,   //控制收音结束
+            },
+            data: {
+              status: 2,
+              text: encodeText(text),
+            },
+          };
+          ttsWS.send(JSON.stringify(params));
+        };
+        ttsWS.onmessage = (e) => {
+          let jsonData = JSON.parse(e.data);
+          // 合成失败
+          if (jsonData.code !== 0) {
+            return;
+          }
+          audioPlayer.postMessage({
+            type: "base64",
+            data: jsonData.data.audio,
+            isLastData: jsonData.data.status === 2,
+          });
+          if (jsonData.code === 0 && jsonData.data.status === 2) {
+            ttsWS.close();
+            vm.closed();
+          }
+        };
+        ttsWS.onerror = (e) => {
+          console.error(e);
+        };
+        ttsWS.onclose = (e) => {};
+      }
 
-    document.getElementById("textarea").onchange =
-      () => {
+      document.getElementById("textarea").onchange = () => {
         ttsWS?.close();
         audioPlayer.reset();
       };
 
-    function allData() {
-      ttsWS?.close();
-      audioPlayer.reset();
-    }
-  </script>
+      function allData() {
+        ttsWS?.close();
+        audioPlayer.reset();
+      }
+    </script>
 
-  <script type="text/javascript">
-    const vm = new Vue({
-      // 配置选项(option)close_Voice_panel
-      el: '#app',
-      data: {
-        isShowMessage: false,//展示内容禁止鼠标点击输入框内的元素
-        isShowLong: false,//展示图表等长内容
-        times: null,
-        echartarr: [],
-        tableData: [],
-        testList: [],
-        textvalues: '',
-        textcontent: '按住说话',
-        isspeacks: true,
-        isactive: false,
-        istext: false,
-        conversationArray: [],
-        isArray: false,
-        isLoading: false,
-        xfVoice: {},
-        APPID: 'f815c988',
-        APISecret: 'ODMwNTc2NDNiOGZiZGZjMTkzNzdhNTc3',
-        APIKey: '657bfe10ef10741f60de4dc728c53353',
-        echartsId: '',
-      },
+    <script type="text/javascript">
+      const vm = new Vue({
+        // 配置选项(option)close_Voice_panel
+        el: "#app",
+        data: {
+          isShowMessage: false, //展示内容禁止鼠标点击输入框内的元素
+          isShowLong: false, //展示图表等长内容
+          times: null,
+          echartarr: [],
+          tableData: [],
+          testList: [],
+          textvalues: "",
+          textcontent: "按住说话",
+          isspeacks: true,
+          isactive: false,
+          istext: false,
+          conversationArray: [],
+          isArray: false,
+          isLoading: false,
+          xfVoice: {},
+          APPID: "f815c988",
+          APISecret: "ODMwNTc2NDNiOGZiZGZjMTkzNzdhNTc3",
+          APIKey: "657bfe10ef10741f60de4dc728c53353",
+          echartsId: "",
+        },
 
-      mounted() {
-        this.textcontent = '按住说话'
-        this.isArray = false
-        window.addEventListener('keyup', this.keyup)
-        // setInterval(this.sendMessage1, 50000);
-      },
-      beforeDestroy() {
-        window.removeEventListener('keyup', this.keyup);
-      },
-      watch: {
-        conversationArray: {
-          handler(newvalue) {
-            for (let i = 0; i < newvalue.length - 1; i++) {
-              if (newvalue[i].role == "assistant") {
-                newvalue[i].isActive = false;
+        mounted() {
+          this.textcontent = "按住说话";
+          this.isArray = false;
+          window.addEventListener("keyup", this.keyup);
+          // setInterval(this.sendMessage1, 50000);
+        },
+        beforeDestroy() {
+          window.removeEventListener("keyup", this.keyup);
+        },
+        watch: {
+          conversationArray: {
+            handler(newvalue) {
+              for (let i = 0; i < newvalue.length - 1; i++) {
+                if (newvalue[i].role == "assistant") {
+                  newvalue[i].isActive = false;
+                }
+              }
+            },
+            deep: true,
+          },
+        },
+        methods: {
+          // sendMessage1() {
+          //   sendMessage({ type: 'open_Voice_panel' })
+          // },
+          keyup(event) {
+            // 按下up键（keyCode 33）来触发按钮点击
+            if (event.keyCode === 33) {
+              // const button = document.getElementById('pageButton');
+              // if (button) {
+              //   button.click();
+              // }
+              sendMessage({ type: "open_Voice_panel" });
+
+              const button = document.getElementById("volumeButton");
+              if (button) {
+                button.click();
+              }
+            }
+            // 按下down键（keyCode 34）来触发按钮点击
+            if (event.keyCode === 34) {
+              // const button = document.getElementById('pageButton');
+              // if (button) {
+              //   button.click();
+              // }
+              // sendMessage({ type: 'toggle_video' })
+              sendMessage({ type: "close_Voice_panel" });
+            }
+            // 按下tab键（keyCode 9）来触发按钮点击
+            if (event.keyCode === 9) {
+              // const button = document.getElementById('tapButton');
+              // if (button) {
+              // button.click();
+              // }
+              // sendMessage({ type: 'close_Voice_panel' })
+              // event.preventDefault()
+              const button = document.getElementById("pageButton");
+              if (button) {
+                button.click();
               }
             }
           },
-          deep: true
-        }
-      },
-      methods: {
-        // sendMessage1() {
-        //   sendMessage({ type: 'open_Voice_panel' })
-        // },
-        keyup(event) {
-          // 按下up键（keyCode 33）来触发按钮点击
-          if (event.keyCode === 33) {
-            // const button = document.getElementById('pageButton');
-            // if (button) {
-            //   button.click();
-            // }
-            sendMessage({ type: 'open_Voice_panel' })
 
-            const button = document.getElementById('volumeButton');
-            if (button) {
-              button.click();
-            }
-          };
-          // 按下down键（keyCode 34）来触发按钮点击
-          if (event.keyCode === 34) {
-            // const button = document.getElementById('pageButton');
-            // if (button) {
-            //   button.click();
-            // }
-            // sendMessage({ type: 'toggle_video' })
-            sendMessage({ type: "close_Voice_panel" })
-          };
-          // 按下tab键（keyCode 9）来触发按钮点击
-          if (event.keyCode === 9) {
-            // const button = document.getElementById('tapButton');
-            // if (button) {
-            // button.click();
-            // }
-            // sendMessage({ type: 'close_Voice_panel' })
-            // event.preventDefault()
-            const button = document.getElementById('pageButton');
-            if (button) {
-              button.click();
-            }
-          }
-        },
+          reports() {
+            //let times = null;
+            let that = this;
+            // 实例化迅飞语音听写（流式版）WebAPI
+            that.xfVoice = new XfVoiceDictation({
+              APPID: that.APPID,
+              APISecret: that.APISecret,
+              APIKey: that.APIKey,
+              url: "wss://iat-api.xfyun.cn/v2/iat",
+              onWillStatusChange: function (oldStatus, newStatus) {},
+              onTextChange: function (status, text) {
+                //监听识别结果的变化
+                if (status == 2 && text) {
+                  that.textvalues = text;
+                  that.sendext();
+                }
+              },
+            });
+            that.xfVoice.start();
+          },
 
-        reports() {
-          //let times = null;
-          let that = this
-          // 实例化迅飞语音听写（流式版）WebAPI
-          that.xfVoice = new XfVoiceDictation({
-            APPID: that.APPID,
-            APISecret: that.APISecret,
-            APIKey: that.APIKey,
-            url: 'wss://iat-api.xfyun.cn/v2/iat',
-            onWillStatusChange: function (oldStatus, newStatus) {
-            },
-            onTextChange: function (status, text) {
-              //监听识别结果的变化
-              if (status == 2 && text) {
-                that.textvalues = text
-                that.sendext()
-              }
-            }
-          });
-          that.xfVoice.start();
-        },
+          closed() {
+            let that = this;
+            that.times = setTimeout(() => {
+              // that.xfVoice.stop();
+              that.textcontent = "按住说话";
+              that.isactive = false;
+            }, 0);
+          },
 
-        closed() {
-          let that = this
-          that.times = setTimeout(() => {
-            // that.xfVoice.stop();
-            that.textcontent = '按住说话'
-            that.isactive = false
-          }, 0);
-        },
-
-
-
-        sendext() {
-          if (this.textvalues) {
-            this.isLoading = true
-            this.isArray = true
-            this.isShowMessage = true
-            this.isShowLong = false
-            this.conversationArray.push({
-              role: 'user',
-              content: this.textvalues,
-            })
-            this.scrollToBottom()
-            // connectWebSocket(this.textvalues)
-            // sendMessage({ type: 'open_panel', value: 'ZHGD' })
-            get('/dtai?user_text=' + this.textvalues).then(res => {
-              this.isLoading = false;
-              this.textvalues = ''
-
+          sendext() {
+            if (this.textvalues) {
+              this.isLoading = true;
+              this.isArray = true;
+              this.isShowMessage = true;
+              this.isShowLong = false;
               this.conversationArray.push({
-                role: 'assistant',
-                content: res?.data?.val || '好的',
-                isActive: true,
-              })
+                role: "user",
+                content: this.textvalues,
+              });
+              this.scrollToBottom();
+              // connectWebSocket(this.textvalues)
+              // sendMessage({ type: 'open_panel', value: 'ZHGD' })
+              get("/dtai?user_text=" + this.textvalues)
+                .then((res) => {
+                  this.isLoading = false;
+                  this.textvalues = "";
 
-              if (res?.data?.type === 'content') {
-                console.log('content');
-                // 如果是问答，打开语音面板
-                sendMessage({ type: "open_Voice_panel" })
-              }
+                  this.conversationArray.push({
+                    role: "assistant",
+                    content: res?.data?.val || "好的",
+                    isActive: true,
+                  });
 
+                  if (res?.data?.type === "content") {
+                    console.log("content");
+                    // 如果是问答，打开语音面板
+                    sendMessage({ type: "open_Voice_panel" });
+                  }
 
-              connectWebSocket(res?.data?.val || '好的')
+                  connectWebSocket(res?.data?.val || "好的");
 
-              if (res?.data?.type === 'action') {
-                console.log('action');
-                sendMessage({ type: "close_Voice_panel" })
-                sendMessage(res.data.data)
-              }
-              this.isShowMessage = false
-              this.scrollToBottom()
-              // if (res.data && res.data[0].actions.length > 0) {
-              //   let zlarr = res.data[0].actions
-              //   this.textvalues = ''
-              //   console.log(zlarr, '这是数据');
-              //   zlarr.forEach(item => {
-              //     console.log(item, 'itemitemitemitem');
+                  if (res?.data?.type === "action") {
+                    console.log("action");
+                    sendMessage({ type: "close_Voice_panel" });
+                    sendMessage(res.data.data);
+                  }
+                  this.isShowMessage = false;
+                  this.scrollToBottom();
+                  // if (res.data && res.data[0].actions.length > 0) {
+                  //   let zlarr = res.data[0].actions
+                  //   this.textvalues = ''
+                  //   console.log(zlarr, '这是数据');
+                  //   zlarr.forEach(item => {
+                  //     console.log(item, 'itemitemitemitem');
 
+                  //     if (item.type) {
+                  //       var obj2 = {
+                  //         role: 'assistant',
+                  //         content: '好的',
+                  //         df: [],
+                  //         isActive: true,
+                  //         echartsId: item.echartsId,
+                  //       }
+                  //       this.conversationArray.push(obj2)
+                  //       //上面的图表重新渲染
 
-              //     if (item.type) {
-              //       var obj2 = {
-              //         role: 'assistant',
-              //         content: '好的',
-              //         df: [],
-              //         isActive: true,
-              //         echartsId: item.echartsId,
-              //       }
-              //       this.conversationArray.push(obj2)
-              //       //上面的图表重新渲染
+                  //       this.scrollToBottom()
+                  //       sendMessage(item)
+                  //       connectWebSocket('好的')
+                  //     } else if (item.SQL) {
+                  //       this.echartarr = JSON.parse(item.df)
+                  //       const allKeys = new Set(this.echartarr.flatMap(Object.keys));
+                  //       var obj3 = {
+                  //         role: 'assistant',
+                  //         content: item.SQL,
+                  //         df: this.echartarr,
+                  //         allKeys: allKeys,
+                  //         dfhead: this.tabulationhead(this.echartarr),
+                  //         dfbody: this.tabulation(this.echartarr),
+                  //         id: 'chartContainer' + new Date().getTime() + Math.random(2),
+                  //         lineId: 'chartContainerTCP' + new Date().getTime() + Math.random(2),
+                  //         pileId: 'chartContainerPle' + new Date().getTime() + Math.random(2),
+                  //         isActive: true,
+                  //         echartsId: item.echartsId
+                  //       }
 
-              //       this.scrollToBottom()
-              //       sendMessage(item)
-              //       connectWebSocket('好的')
-              //     } else if (item.SQL) {
-              //       this.echartarr = JSON.parse(item.df)
-              //       const allKeys = new Set(this.echartarr.flatMap(Object.keys));
-              //       var obj3 = {
-              //         role: 'assistant',
-              //         content: item.SQL,
-              //         df: this.echartarr,
-              //         allKeys: allKeys,
-              //         dfhead: this.tabulationhead(this.echartarr),
-              //         dfbody: this.tabulation(this.echartarr),
-              //         id: 'chartContainer' + new Date().getTime() + Math.random(2),
-              //         lineId: 'chartContainerTCP' + new Date().getTime() + Math.random(2),
-              //         pileId: 'chartContainerPle' + new Date().getTime() + Math.random(2),
-              //         isActive: true,
-              //         echartsId: item.echartsId
-              //       }
+                  //       this.conversationArray.push(obj3)
 
-              //       this.conversationArray.push(obj3)
+                  //       //滚动条
+                  //       this.scrollToBottom()
+                  //       //scoket控制动作
+                  //       connectWebSocket(item.SQL)
 
+                  //     } else {
+                  //       var obj4 = {
+                  //         role: 'assistant',
+                  //         content: item.chat,
+                  //         df: [],
+                  //         isActive: true,
+                  //         echartsId: item.echartsId
+                  //       }
+                  //       this.conversationArray.push(obj4);
 
-              //       //滚动条
-              //       this.scrollToBottom()
-              //       //scoket控制动作
-              //       connectWebSocket(item.SQL)
-
-              //     } else {
-              //       var obj4 = {
-              //         role: 'assistant',
-              //         content: item.chat,
-              //         df: [],
-              //         isActive: true,
-              //         echartsId: item.echartsId
-              //       }
-              //       this.conversationArray.push(obj4);
-
-
-              //       this.scrollToBottom()
-              //       connectWebSocket(item.chat);
-              //     }
-              //   });
-              //   this.isShowMessage = false
-              // } else {
-              //   this.$message.warn('暂无数据,请重新查询！')
-              // }
-            }).catch(error => {
-              this.isLoading = false
-              this.isShowMessage = false
-              // this.$message.error('发送失败,请重新发送')
-            })
-          } else {
-            this.$message.warning('请输入内容')
-          }
-        },
-
-        speaks() {
-          if (this.isactive) {
-            this.isactive = false
-            this.textcontent = '按住说话'
-            this.xfVoice.stop();
-          } else {
-            this.isactive = true
-            this.textcontent = ''
-            this.reports()
-          }
-        },
-        toggletext() {
-          if (this.isspeacks) {
-            this.istext = true
-            this.isspeacks = false
-            this.textvalues = ''
-            this.speaks();
-          } else {
-            this.istext = false
-            this.isspeacks = true
-            this.speaks();
-          }
-        },
-
-        //高度
-        scrollToBottom() {
-          this.$nextTick(() => {
-            this.$refs.conversationList.scrollTop = this.$refs.conversationList.scrollHeight;
-          });
-        },
-        //列表
-        tabulationhead(test) {
-          var testList = []
-          for (let i = 0; i < test.length; i++) {
-            let keys = Object.keys(test[i]);
-            for (let j = 0; j < keys.length; j++) {
-              let testObject = {
-                address: keys[j],
-                label: keys[j]
-              }
-              testList.push(testObject);
+                  //       this.scrollToBottom()
+                  //       connectWebSocket(item.chat);
+                  //     }
+                  //   });
+                  //   this.isShowMessage = false
+                  // } else {
+                  //   this.$message.warn('暂无数据,请重新查询！')
+                  // }
+                })
+                .catch((error) => {
+                  this.isLoading = false;
+                  this.isShowMessage = false;
+                  // this.$message.error('发送失败,请重新发送')
+                });
+            } else {
+              this.$message.warning("请输入内容");
             }
-            return testList
-          }
-        },
-        tabulation(test) {
-          let allArray = [];
-          for (let i = 0; i < test.length; i++) {
-            let itemObj = {};
-            let item = test[i];
-            let keys = Object.keys(item);
-            for (let j = 0; j < keys.length; j++) {
-              itemObj[keys[j]] = item[keys[j]];
+          },
+
+          speaks() {
+            if (this.isactive) {
+              this.isactive = false;
+              this.textcontent = "按住说话";
+              this.xfVoice.stop();
+            } else {
+              this.isactive = true;
+              this.textcontent = "";
+              this.reports();
             }
-            allArray.push(itemObj);
-          }
-          // console.dir(allArray);
-          var s = JSON.stringify(allArray);
-          this.tableData = allArray;
+          },
+          toggletext() {
+            if (this.isspeacks) {
+              this.istext = true;
+              this.isspeacks = false;
+              this.textvalues = "";
+              this.speaks();
+            } else {
+              this.istext = false;
+              this.isspeacks = true;
+              this.speaks();
+            }
+          },
 
-          return allArray
+          //高度
+          scrollToBottom() {
+            this.$nextTick(() => {
+              this.$refs.conversationList.scrollTop =
+                this.$refs.conversationList.scrollHeight;
+            });
+          },
+          //列表
+          tabulationhead(test) {
+            var testList = [];
+            for (let i = 0; i < test.length; i++) {
+              let keys = Object.keys(test[i]);
+              for (let j = 0; j < keys.length; j++) {
+                let testObject = {
+                  address: keys[j],
+                  label: keys[j],
+                };
+                testList.push(testObject);
+              }
+              return testList;
+            }
+          },
+          tabulation(test) {
+            let allArray = [];
+            for (let i = 0; i < test.length; i++) {
+              let itemObj = {};
+              let item = test[i];
+              let keys = Object.keys(item);
+              for (let j = 0; j < keys.length; j++) {
+                itemObj[keys[j]] = item[keys[j]];
+              }
+              allArray.push(itemObj);
+            }
+            // console.dir(allArray);
+            var s = JSON.stringify(allArray);
+            this.tableData = allArray;
+
+            return allArray;
+          },
         },
-      }
-    })
-  </script>
-</body>
-
+      });
+    </script>
+  </body>
 </html>
