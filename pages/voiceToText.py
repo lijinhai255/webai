@@ -139,7 +139,7 @@ def main():
     # 添加语音识别控制按钮
     col1, col2 = st.columns([1, 3])
     with col1:
-        voice_button = st.button("🎤 开始/停止语音识别", key="voice_control", disabled=not stt.is_running)
+        voice_button = st.button("🎤 开始/停止语音识别", key="voice_control")
         if voice_button:
             if stt.is_running:
                 stt.stop_listening()
