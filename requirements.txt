@@ -7,3 +7,4 @@ PyPDF2
 matplotlib
 zhipuai
 langchain_openai
+pdfplumber
