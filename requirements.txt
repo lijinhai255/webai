@@ -1,54 +1,12 @@
-# 核心库
-
-numpy==1.26.*
-pandas==1.5.*
-scipy==1.11.*
-matplotlib==3.8.*
-
-# 数据分析
-dask==2023.*
-xarray==1.8.*
-statsmodels==1.13.*
-
-# 可视化
-holoviews==1.5.*
-hvplot==0.9.*
-plotly==1.45.*
-
-# Web框架
-fastapi==0.115.*
-uvicorn==0.34.*
-flask==2.2.*
-
-# AI/ML
-transformers==4.48.*
-huggingface_hub==0.28.*
-langchain==0.3.18
-openai==1.31.0  # 明确版本号更安全
-
-# 文档工具
-markdown==3.4.*
-docstring-to-markdown==0.14.*
-
-# 开发工具
-black==23.2.*
-isort==0.9.*
-pylint==2.16.*
-flake8==4.1.0.*
-
-# 其他常用库
-requests==2.37.*
-beautifulsoup4==4.12.*
-selenium==4.18.*
-openpyxl==3.1.*
-jinja2==3.12.*
-psutil==5.15.*
-sqlalchemy==2.0.*
-tenacity==8.5.*
-ipykernel==1.16.*
-streamlit==1.24.*
-pdfplumber==0.18.9
-docx==1.11.*
-exceptions==0.7.*
-zhipuai==1.0.0
-langchain_openai==0.2.0
+streamlit
+openai
+langchain
+python-dotenv
+pandas
+PyPDF2
+matplotlib
+zhipuai
+langchain_openai
+pdfplumber
+docx
+exceptions
