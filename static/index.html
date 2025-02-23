@@ -222,6 +222,7 @@
       const API_SECRET = "ODMwNTc2NDNiOGZiZGZjMTkzNzdhNTc3";
       const API_KEY = "657bfe10ef10741f60de4dc728c53353";
       function getWebSocketUrl(apiKey, apiSecret) {
+        console.log(apiKey, apiSecret, "apiKey, apiSecret");
         var url = "wss://tts-api.xfyun.cn/v2/tts";
         var host = location.host;
         var date = new Date().toGMTString();
@@ -255,10 +256,12 @@
         }
       }
       let ttsWS;
-      const audioPlayer = new AudioPlayer("../Voice/dist");
+      const audioPlayer = new AudioPlayer("./dist");
+      console.log(audioPlayer, "audioPlayer-audioPlayer");
 
       function connectWebSocket(datas) {
         const url = getWebSocketUrl(API_KEY, API_SECRET);
+        // const audioPlayer = new AudioPlayer('/@/components/root/dist');
         if ("WebSocket" in window) {
           ttsWS = new WebSocket(url);
         } else if ("MozWebSocket" in window) {
@@ -267,6 +270,7 @@
           alert("浏览器不支持WebSocket");
           return;
         }
+        console.log(ttsWS, "ttsWS-ttsWS");
         ttsWS.onopen = (e) => {
           audioPlayer.start({
             autoPlay: true,
@@ -299,6 +303,7 @@
         };
         ttsWS.onmessage = (e) => {
           let jsonData = JSON.parse(e.data);
+          console.log(jsonData, "jsonData-jsonData", e);
           // 合成失败
           if (jsonData.code !== 0) {
             return;
@@ -310,7 +315,7 @@
           });
           if (jsonData.code === 0 && jsonData.data.status === 2) {
             ttsWS.close();
-            vm.closed();
+            //vm.closed();
           }
         };
         ttsWS.onerror = (e) => {
@@ -318,7 +323,6 @@
         };
         ttsWS.onclose = (e) => {};
       }
-
       document.getElementById("textarea").onchange = () => {
         ttsWS?.close();
         audioPlayer.reset();
@@ -456,7 +460,6 @@
                 content: this.textvalues,
               });
               this.scrollToBottom();
-              // connectWebSocket(this.textvalues)
               // sendMessage({ type: 'open_panel', value: 'ZHGD' })
               get("/dtai?user_text=" + this.textvalues)
                 .then((res) => {
@@ -465,19 +468,14 @@
                   this.textvalues = "";
 
                   if (res?.type === "content") {
-                    console.log("content");
-                    // 如果是问答，打开语音面板
-                    // sendMessage({ type: "open_Voice_panel" });
                     this.conversationArray.push({
                       role: "assistant",
                       content: this.parseMarkdown(res?.val || "好的"), // 修改此处,
-                      // content: this.parseMarkdown("**测试文本**"), // 修改此处,
                       isActive: true,
                     });
+                    console.log(connectWebSocket, "connectWebSocket");
+                    connectWebSocket(res?.val || "好的");
                   }
-
-                  connectWebSocket(res?.data?.val || "好的");
-
                   if (res?.data?.type === "action") {
                     console.log("action");
                     sendMessage({ type: "close_Voice_panel" });
@@ -485,74 +483,10 @@
                   }
                   this.isShowMessage = false;
                   this.scrollToBottom();
-                  // if (res.data && res.data[0].actions.length > 0) {
-                  //   let zlarr = res.data[0].actions
-                  //   this.textvalues = ''
-                  //   console.log(zlarr, '这是数据');
-                  //   zlarr.forEach(item => {
-                  //     console.log(item, 'itemitemitemitem');
-
-                  //     if (item.type) {
-                  //       var obj2 = {
-                  //         role: 'assistant',
-                  //         content: '好的',
-                  //         df: [],
-                  //         isActive: true,
-                  //         echartsId: item.echartsId,
-                  //       }
-                  //       this.conversationArray.push(obj2)
-                  //       //上面的图表重新渲染
-
-                  //       this.scrollToBottom()
-                  //       sendMessage(item)
-                  //       connectWebSocket('好的')
-                  //     } else if (item.SQL) {
-                  //       this.echartarr = JSON.parse(item.df)
-                  //       const allKeys = new Set(this.echartarr.flatMap(Object.keys));
-                  //       var obj3 = {
-                  //         role: 'assistant',
-                  //         content: item.SQL,
-                  //         df: this.echartarr,
-                  //         allKeys: allKeys,
-                  //         dfhead: this.tabulationhead(this.echartarr),
-                  //         dfbody: this.tabulation(this.echartarr),
-                  //         id: 'chartContainer' + new Date().getTime() + Math.random(2),
-                  //         lineId: 'chartContainerTCP' + new Date().getTime() + Math.random(2),
-                  //         pileId: 'chartContainerPle' + new Date().getTime() + Math.random(2),
-                  //         isActive: true,
-                  //         echartsId: item.echartsId
-                  //       }
-
-                  //       this.conversationArray.push(obj3)
-
-                  //       //滚动条
-                  //       this.scrollToBottom()
-                  //       //scoket控制动作
-                  //       connectWebSocket(item.SQL)
-
-                  //     } else {
-                  //       var obj4 = {
-                  //         role: 'assistant',
-                  //         content: item.chat,
-                  //         df: [],
-                  //         isActive: true,
-                  //         echartsId: item.echartsId
-                  //       }
-                  //       this.conversationArray.push(obj4);
-
-                  //       this.scrollToBottom()
-                  //       connectWebSocket(item.chat);
-                  //     }
-                  //   });
-                  //   this.isShowMessage = false
-                  // } else {
-                  //   this.$message.warn('暂无数据,请重新查询！')
-                  // }
                 })
                 .catch((error) => {
                   this.isLoading = false;
                   this.isShowMessage = false;
-                  // this.$message.error('发送失败,请重新发送')
                 });
             } else {
               this.$message.warning("请输入内容");
