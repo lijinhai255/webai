@@ -21,6 +21,14 @@
     <script src="./js/base64.js"></script>
     <script src="./js/crypto-js.js"></script>
     <script src="./js/index.umd.js"></script>
+    <!-- 新增依赖 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   </head>
 
   <body>
@@ -42,11 +50,7 @@
                 />
               </div>
               <div class="guide-text" style="margin-left: 16px">
-                <img
-                  src="./img/DialogBox/hyy.png"
-                  alt="欢迎语"
-                  style="width: 100%; height: 100%"
-                />
+                Hellow 我是优秀的AI面试小助手，有什么可以帮助您的吗？
               </div>
             </div>
 
@@ -78,9 +82,11 @@
                     />
                     <div class="person1">
                       <div class="person">
-                        <span :class="{ 'active': item.isActive}"
-                          >{{item.content}}</span
-                        >
+                        <div
+                          :class="{ 'active': item.isActive}"
+                          class="markdown-content"
+                          v-html="item.content"
+                        ></div>
                         <div
                           style="
                             display: flex;
@@ -330,7 +336,7 @@
         el: "#app",
         data: {
           isShowMessage: false, //展示内容禁止鼠标点击输入框内的元素
-          isShowLong: false, //展示图表等长内容
+          isShowLong: true, //展示图表等长内容
           times: null,
           echartarr: [],
           tableData: [],
@@ -342,7 +348,7 @@
           istext: false,
           conversationArray: [],
           isArray: false,
-          isLoading: false,
+          isLoading: true,
           xfVoice: {},
           APPID: "f815c988",
           APISecret: "ODMwNTc2NDNiOGZiZGZjMTkzNzdhNTc3",
@@ -372,17 +378,23 @@
           },
         },
         methods: {
+          // 新增Markdown解析方法
+          parseMarkdown(raw) {
+            marked.setOptions({
+              breaks: true, // 保留换行
+              highlight: (code) => hljs.highlightAuto(code).value,
+            });
+
+            // 消毒处理（防止XSS）
+            return DOMPurify.sanitize(marked.parse(raw));
+          },
           // sendMessage1() {
           //   sendMessage({ type: 'open_Voice_panel' })
           // },
           keyup(event) {
             // 按下up键（keyCode 33）来触发按钮点击
             if (event.keyCode === 33) {
-              // const button = document.getElementById('pageButton');
-              // if (button) {
-              //   button.click();
-              // }
-              sendMessage({ type: "open_Voice_panel" });
+              ssage({ type: "open_Voice_panel" });
 
               const button = document.getElementById("volumeButton");
               if (button) {
@@ -391,21 +403,10 @@
             }
             // 按下down键（keyCode 34）来触发按钮点击
             if (event.keyCode === 34) {
-              // const button = document.getElementById('pageButton');
-              // if (button) {
-              //   button.click();
-              // }
-              // sendMessage({ type: 'toggle_video' })
               sendMessage({ type: "close_Voice_panel" });
             }
             // 按下tab键（keyCode 9）来触发按钮点击
             if (event.keyCode === 9) {
-              // const button = document.getElementById('tapButton');
-              // if (button) {
-              // button.click();
-              // }
-              // sendMessage({ type: 'close_Voice_panel' })
-              // event.preventDefault()
               const button = document.getElementById("pageButton");
               if (button) {
                 button.click();
@@ -424,10 +425,11 @@
               url: "wss://iat-api.xfyun.cn/v2/iat",
               onWillStatusChange: function (oldStatus, newStatus) {},
               onTextChange: function (status, text) {
+                console.log(status, text, "status, text");
                 //监听识别结果的变化
                 if (status == 2 && text) {
                   that.textvalues = text;
-                  that.sendext();
+                  // that.sendext();
                 }
               },
             });
@@ -468,7 +470,8 @@
                     // sendMessage({ type: "open_Voice_panel" });
                     this.conversationArray.push({
                       role: "assistant",
-                      content: res?.val || "好的",
+                      content: this.parseMarkdown(res?.val || "好的"), // 修改此处,
+                      // content: this.parseMarkdown("**测试文本**"), // 修改此处,
                       isActive: true,
                     });
                   }
@@ -566,6 +569,7 @@
               this.textcontent = "";
               this.reports();
             }
+            // this.reports();
           },
           toggletext() {
             if (this.isspeacks) {
