@@ -474,7 +474,8 @@
                       isActive: true,
                     });
                     console.log(connectWebSocket, "connectWebSocket");
-                    connectWebSocket(res?.val || "好的");
+                    // 语音合成
+                    // connectWebSocket(res?.val || "好的");
                   }
                   if (res?.data?.type === "action") {
                     console.log("action");
