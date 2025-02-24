@@ -97,15 +97,33 @@ async def chat_endpoint(websocket: WebSocket):
             "content": f"处理失败: {str(e)}"
         })
 @app.get("/dtai")
-async def dtai_endpoint(user_text: str):  # 接收查询参数
-    # 调用ChatGLM4模型处理
+async def dtai_endpoint(user_text: str):
+    # 优先尝试知识库查询
+    try:
+        if chat_glm.knowledge_base:
+            # 1. 检索知识库
+            docs = chat_glm.knowledge_base.query(user_text, top_k=1)
+            
+            # 2. 判断相关性阈值（示例值0.7，需根据实际调整）
+            if docs and docs[0].metadata.get('score', 0) > 0.7:
+                return {
+                    "type": "knowledge",
+                    "val": docs[0].page_content,
+                    "source": docs[0].metadata.get('source', 'local_kb'),
+                    "confidence": round(docs[0].metadata['score'], 2),
+                    "data": {"actions": ["show_source"]}
+                }
+                
+    except Exception as e:
+        logger.error(f"知识库查询失败: {str(e)}")
+
+    # 3. 知识库无结果时调用大模型
     response = await chat_glm.async_generate(user_text)
+    
     return {
         "type": "content",
         "val": response,
-        "data": {
-            "actions": []  # 根据实际业务补充
-        }
+        "data": {"actions": []}
     }
 @app.get("/chat/history/{session_id}")
 async def get_history(session_id: str):

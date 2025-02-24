@@ -1,0 +1,16 @@
+# 原配置结构
+knowledge_base:
+  enabled: True
+  path: "/Users/lijinhai/Desktop/学习/resume-optimizer/data/docs" # 绝对路径
+  glob_pattern: "**/*.md"
+  chunk_size: 1000
+  overlap: 200
+
+vector_db: # 需要提升为顶层段落
+  enabled: True
+  model_name: "/Users/lijinhai/Desktop/学习/01-Langchain/models/models--BAAI--bge-large-zh-v1.5/snapshots/79e7739b6ab944e86d6171e44d24c997fc1e0116"
+  persistence_path: "/Users/lijinhai/Desktop/学习/resume-optimizer/data/vector_db" # 绝对路径
+
+chat:
+  api_key: "$ZHIPUAI_API_KEY"
+  knowledge_enabled: True
