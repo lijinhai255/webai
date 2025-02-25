@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import redis
 import uvicorn
-from LLM.chat_glm4 import ChatGLM4
+from LLM.chat_glm4New import ChatGLM4
 
 app = FastAPI(title="智能对话服务", version="2.1.0")
 
