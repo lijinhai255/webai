@@ -384,17 +384,33 @@
         methods: {
           // 新增Markdown解析方法
           parseMarkdown(raw) {
-            marked.setOptions({
-              breaks: true, // 保留换行
-              highlight: (code) => hljs.highlightAuto(code).value,
-            });
+            try {
+              // 配置 marked 以使用 hljs 进行语法高亮
+              marked.setOptions({
+                breaks: true,
+                highlight: (code, language) => {
+                  return hljs.highlight(language || "javascript", code).value;
+                },
+              });
 
-            // 消毒处理（防止XSS）
-            return DOMPurify.sanitize(marked.parse(raw));
+              // 解析原始 Markdown
+              const parsed = marked.parse(raw);
+              console.log("parsed 结构:", parsed); // 调试用
+
+              // 使用 DOMPurify 消毒，允许保留代码块和高亮类
+              const sanitized = DOMPurify.sanitize(parsed, {
+                ADD_TAGS: ["pre", "code"],
+                ALLOWED_CLASSES: ["hljs", "hljs-javascript", "hljs-string"], // 关键配置
+                SAFE_FOR_TEMPLATES: false,
+              });
+
+              // 确保代码块标签保留
+              return sanitized;
+            } catch (error) {
+              console.error("Markdown 解析失败:", error);
+              return "<p>解析错误，请检查输入内容。</p>";
+            }
           },
-          // sendMessage1() {
-          //   sendMessage({ type: 'open_Voice_panel' })
-          // },
           keyup(event) {
             // 按下up键（keyCode 33）来触发按钮点击
             if (event.keyCode === 33) {

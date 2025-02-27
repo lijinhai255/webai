@@ -9,6 +9,10 @@ from pydantic import BaseModel, Field
 import redis
 import uvicorn
 from LLM.chat_glm4New import ChatGLM4
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="智能对话服务", version="2.1.0")
 

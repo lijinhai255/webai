@@ -89,7 +89,7 @@ class ChatGLM4(LLM):
             trimmed_history = history[-5:] + [{"role": "user", "content": processed_prompt}]
             
             response = self.client.chat.completions.create(
-                model="glm-4",
+                model="ChatGLM4",
                 messages=trimmed_history,
                 temperature=config.get("temperature", 0.7)
             )
@@ -176,7 +176,7 @@ class ChatGLM4(LLM):
                 logger.info(f"生成结果: {final_result[:50]}...")
             else:
                 logger.info(f"生成结果: {final_result}")
-
+            print("生成结果: ", final_result)
             return final_result
 
         except Exception as e:
