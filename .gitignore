@@ -1,0 +1,5 @@
+data/*
+test_env/*
+test_env2
+venv/*
+__pycache__/*
