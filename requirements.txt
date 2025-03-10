@@ -13,4 +13,4 @@ plotly
 websocket-client 
 langchain_huggingface
 moviepy
-cv2
+OpenCV
