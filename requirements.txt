@@ -14,3 +14,4 @@ websocket-client
 langchain_huggingface
 moviepy
 OpenCV
+opencv-python
