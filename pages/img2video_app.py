@@ -2,35 +2,23 @@ import os
 import time
 import streamlit as st
 from LLM.img_videox import ChatCogVideoX
-from moviepy.editor import VideoFileClip
 from urllib.request import urlretrieve
+from PIL import Image
+import io
+import requests
 
 def get_last_frame(video_url):
-    # 临时下载视频
-    temp_video_path = "./temp_video.mp4"
     try:
-        urlretrieve(video_url, temp_video_path)
-        
-        # 使用moviepy打开视频
-        video = VideoFileClip(temp_video_path)
-        
-        # 获取最后一帧
-        last_frame = video.get_frame(-1)  # -1 表示最后一帧
-        
-        # 保存最后一帧
-        last_frame_path = "./last_frame.jpg"
-        video.save_frame(last_frame_path, t=video.duration)
-        
-        # 释放资源
-        video.close()
-        
-        # 删除临时视频文件
-        os.remove(temp_video_path)
-        
-        return last_frame_path
+        # 直接获取视频的最后一帧（从API返回的cover_url）
+        response = requests.get(video_url)
+        if response.status_code == 200:
+            img = Image.open(io.BytesIO(response.content))
+            
+            # 保存最后一帧
+            last_frame_path = "./last_frame.jpg"
+            img.save(last_frame_path)
+            return last_frame_path
     except Exception as e:
-        if os.path.exists(temp_video_path):
-            os.remove(temp_video_path)
         st.error(f"获取视频最后一帧失败: {str(e)}")
         return None
 
