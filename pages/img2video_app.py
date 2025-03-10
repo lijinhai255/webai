@@ -1,9 +1,39 @@
-# app.py
-
 import os
 import time
 import streamlit as st
 from LLM.img_videox import ChatCogVideoX
+import cv2
+from urllib.request import urlretrieve
+
+def get_last_frame(video_url):
+    # 临时下载视频
+    temp_video_path = "./temp_video.mp4"
+    urlretrieve(video_url, temp_video_path)
+    
+    # 打开视频
+    cap = cv2.VideoCapture(temp_video_path)
+    
+    # 获取视频总帧数
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+    # 设置读取位置为最后一帧
+    cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames - 1)
+    
+    # 读取最后一帧
+    ret, last_frame = cap.read()
+    
+    # 释放资源
+    cap.release()
+    
+    # 删除临时视频文件
+    os.remove(temp_video_path)
+    
+    if ret:
+        # 保存最后一帧
+        last_frame_path = "./last_frame.jpg"
+        cv2.imwrite(last_frame_path, last_frame)
+        return last_frame_path
+    return None
 
 def img2video_app():
     st.title("🎬 图生视频演示（手动查询）")
@@ -61,6 +91,13 @@ def img2video_app():
                 if "video_url" in result:
                     # 生成成功
                     st.video(result["video_url"])
+                    
+                    # 获取视频最后一帧作为封面
+                    last_frame_path = get_last_frame(result["video_url"])
+                    if last_frame_path:
+                        st.image(last_frame_path, caption="🎬 视频最后一帧")
+                        os.remove(last_frame_path)  # 清理临时文件
+                        
                     st.image(result["cover_url"], caption="🎬 视频封面")
                     st.session_state.img2video_task_id = None  # 清空任务ID
                 elif result.get("error") == "PROCESSING":
