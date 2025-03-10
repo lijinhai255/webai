@@ -7,10 +7,10 @@ from PIL import Image
 import io
 import requests
 
-def get_last_frame(video_url):
+def get_last_frame(cover_url):
     try:
-        # 直接获取视频的最后一帧（从API返回的cover_url）
-        response = requests.get(video_url)
+        # 直接获取封面图片
+        response = requests.get(cover_url)
         if response.status_code == 200:
             img = Image.open(io.BytesIO(response.content))
             
@@ -19,7 +19,7 @@ def get_last_frame(video_url):
             img.save(last_frame_path)
             return last_frame_path
     except Exception as e:
-        st.error(f"获取视频最后一帧失败: {str(e)}")
+        st.error(f"获取视频封面失败: {str(e)}")
         return None
 
 def img2video_app():
@@ -79,13 +79,15 @@ def img2video_app():
                     # 生成成功
                     st.video(result["video_url"])
                     
-                    # 获取视频最后一帧作为封面
-                    last_frame_path = get_last_frame(result["video_url"])
-                    if last_frame_path:
-                        st.image(last_frame_path, caption="🎬 视频最后一帧")
-                        os.remove(last_frame_path)  # 清理临时文件
-                        
-                    st.image(result["cover_url"], caption="🎬 视频封面")
+                    # 使用cover_url获取封面图
+                    if "cover_url" in result:
+                        last_frame_path = get_last_frame(result["cover_url"])
+                        if last_frame_path:
+                            st.image(last_frame_path, caption="🎬 视频最后一帧")
+                            os.remove(last_frame_path)  # 清理临时文件
+                            
+                        st.image(result["cover_url"], caption="🎬 视频封面")
+                    
                     st.session_state.img2video_task_id = None  # 清空任务ID
                 elif result.get("error") == "PROCESSING":
                     st.info("视频仍在处理中，请稍后再试。")
