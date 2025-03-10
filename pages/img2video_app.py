@@ -4,24 +4,31 @@ import streamlit as st
 from LLM.img_videox import ChatCogVideoX
 from urllib.request import urlretrieve
 from PIL import Image
-import io
-import requests
 
-def get_last_frame(cover_url):
+import cv2
+
+def get_last_frame_from_video(video_url, output_path="./last_frame.jpg"):
     try:
-        # 直接获取封面图片
-        response = requests.get(cover_url)
-        if response.status_code == 200:
-            img = Image.open(io.BytesIO(response.content))
-            
-            # 保存最后一帧
-            last_frame_path = "./last_frame.jpg"
-            img.save(last_frame_path)
-            return last_frame_path
-    except Exception as e:
-        st.error(f"获取视频封面失败: {str(e)}")
-        return None
+        cap = cv2.VideoCapture(video_url)
+        if not cap.isOpened():
+            raise Exception("无法打开视频")
 
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        if total_frames > 0:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames - 1)  # 设置到最后一帧
+            ret, frame = cap.read()
+            if ret:
+                cv2.imwrite(output_path, frame)
+                return output_path
+            else:
+                raise Exception("无法读取最后一帧")
+        else:
+            raise Exception("视频没有帧")
+
+        cap.release()
+    except Exception as e:
+        st.error(f"获取视频最后一帧失败: {str(e)}")
+        return None
 def img2video_app():
     st.title("🎬 图生视频演示（手动查询）")
 
@@ -81,7 +88,7 @@ def img2video_app():
                     
                     # 使用cover_url获取封面图
                     if "cover_url" in result:
-                        last_frame_path = get_last_frame(result["cover_url"])
+                        last_frame_path = get_last_frame_from_video(result["cover_url"])
                         if last_frame_path:
                             st.image(last_frame_path, caption="🎬 视频最后一帧")
                             os.remove(last_frame_path)  # 清理临时文件
