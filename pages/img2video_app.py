@@ -2,38 +2,37 @@ import os
 import time
 import streamlit as st
 from LLM.img_videox import ChatCogVideoX
-import cv2
+from moviepy.editor import VideoFileClip
 from urllib.request import urlretrieve
 
 def get_last_frame(video_url):
     # 临时下载视频
     temp_video_path = "./temp_video.mp4"
-    urlretrieve(video_url, temp_video_path)
-    
-    # 打开视频
-    cap = cv2.VideoCapture(temp_video_path)
-    
-    # 获取视频总帧数
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    
-    # 设置读取位置为最后一帧
-    cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames - 1)
-    
-    # 读取最后一帧
-    ret, last_frame = cap.read()
-    
-    # 释放资源
-    cap.release()
-    
-    # 删除临时视频文件
-    os.remove(temp_video_path)
-    
-    if ret:
+    try:
+        urlretrieve(video_url, temp_video_path)
+        
+        # 使用moviepy打开视频
+        video = VideoFileClip(temp_video_path)
+        
+        # 获取最后一帧
+        last_frame = video.get_frame(-1)  # -1 表示最后一帧
+        
         # 保存最后一帧
         last_frame_path = "./last_frame.jpg"
-        cv2.imwrite(last_frame_path, last_frame)
+        video.save_frame(last_frame_path, t=video.duration)
+        
+        # 释放资源
+        video.close()
+        
+        # 删除临时视频文件
+        os.remove(temp_video_path)
+        
         return last_frame_path
-    return None
+    except Exception as e:
+        if os.path.exists(temp_video_path):
+            os.remove(temp_video_path)
+        st.error(f"获取视频最后一帧失败: {str(e)}")
+        return None
 
 def img2video_app():
     st.title("🎬 图生视频演示（手动查询）")
