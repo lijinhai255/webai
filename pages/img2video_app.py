@@ -7,6 +7,8 @@ from PIL import Image
 
 import cv2
 
+import cv2
+print(cv2.__version__)
 def get_last_frame_from_video(video_url, output_path="./last_frame.jpg"):
     try:
         cap = cv2.VideoCapture(video_url)
