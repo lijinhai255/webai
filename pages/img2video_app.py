@@ -4,32 +4,66 @@ import streamlit as st
 from LLM.img_videox import ChatCogVideoX
 from urllib.request import urlretrieve
 from PIL import Image
-
 import cv2
+import tempfile
+import requests
 
-print(cv2.__version__)
+def download_video(url, temp_path):
+    response = requests.get(url, stream=True)
+    if response.status_code == 200:
+        with open(temp_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+        return True
+    return False
+
 def get_last_frame_from_video(video_url, output_path="./last_frame.jpg"):
     try:
-        cap = cv2.VideoCapture(video_url)
+        # 创建临时文件来保存视频
+        with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as temp_video:
+            temp_video_path = temp_video.name
+            
+        # 下载视频到临时文件
+        if not download_video(video_url, temp_video_path):
+            raise Exception("无法下载视频")
+
+        # 打开视频文件
+        cap = cv2.VideoCapture(temp_video_path)
         if not cap.isOpened():
             raise Exception("无法打开视频")
 
+        # 获取总帧数
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        
         if total_frames > 0:
-            cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames - 1)  # 设置到最后一帧
-            ret, frame = cap.read()
-            if ret:
-                cv2.imwrite(output_path, frame)
+            # 读取所有帧直到最后一帧
+            last_frame = None
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                last_frame = frame
+
+            if last_frame is not None:
+                cv2.imwrite(output_path, last_frame)
                 return output_path
             else:
                 raise Exception("无法读取最后一帧")
         else:
             raise Exception("视频没有帧")
 
-        cap.release()
     except Exception as e:
         st.error(f"获取视频最后一帧失败: {str(e)}")
         return None
+    
+    finally:
+        if 'cap' in locals():
+            cap.release()
+        # 清理临时文件
+        if 'temp_video_path' in locals() and os.path.exists(temp_video_path):
+            os.unlink(temp_video_path)
+
 def img2video_app():
     st.title("🎬 图生视频演示（手动查询）")
 
@@ -77,7 +111,7 @@ def img2video_app():
                     st.success(f"任务已提交, task_id={task_id}")
                     st.info("请稍后点击【查询进度】按钮。")
 
-    # **在这里用手动查询按钮，而不是自动轮询**
+    # 手动查询进度
     if st.session_state.img2video_task_id:
         if st.button("🔍 查询进度"):
             with st.spinner("正在查询视频状态..."):
@@ -87,13 +121,14 @@ def img2video_app():
                     # 生成成功
                     st.video(result["video_url"])
                     
-                    # 使用cover_url获取封面图
+                    # 获取最后一帧
+                    last_frame_path = get_last_frame_from_video(result["video_url"])
+                    if last_frame_path and os.path.exists(last_frame_path):
+                        st.image(last_frame_path, caption="🎬 视频最后一帧")
+                        os.remove(last_frame_path)  # 清理临时文件
+                    
+                    # 显示封面图（如果有）
                     if "cover_url" in result:
-                        last_frame_path = get_last_frame_from_video(result["cover_url"])
-                        if last_frame_path:
-                            st.image(last_frame_path, caption="🎬 视频最后一帧")
-                            os.remove(last_frame_path)  # 清理临时文件
-                            
                         st.image(result["cover_url"], caption="🎬 视频封面")
                     
                     st.session_state.img2video_task_id = None  # 清空任务ID
