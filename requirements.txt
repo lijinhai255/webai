@@ -13,3 +13,4 @@ plotly
 websocket-client 
 langchain_huggingface
 opencv-python
+opencv-contrib-python
