@@ -384,31 +384,52 @@
         methods: {
           // 新增Markdown解析方法
           parseMarkdown(raw) {
+            // 1. 首先检查输入是否为有效字符串
+            if (!raw || typeof raw !== "string") {
+              console.error("Invalid input:", raw);
+              return "<p>请输入有效的 Markdown 文本</p>";
+            }
+
             try {
-              // 配置 marked 以使用 hljs 进行语法高亮
+              // 2. 扩展 marked 配置
               marked.setOptions({
                 breaks: true,
+                gfm: true, // 启用 GitHub 风格 Markdown
                 highlight: (code, language) => {
-                  return hljs.highlight(language || "javascript", code).value;
+                  if (!language) return hljs.highlightAuto(code).value;
+                  try {
+                    return hljs.highlight(language, code).value;
+                  } catch (e) {
+                    return code; // 降级处理
+                  }
                 },
               });
 
-              // 解析原始 Markdown
-              const parsed = marked.parse(raw);
-              console.log("parsed 结构:", parsed); // 调试用
-
-              // 使用 DOMPurify 消毒，允许保留代码块和高亮类
-              const sanitized = DOMPurify.sanitize(parsed, {
-                ADD_TAGS: ["pre", "code"],
-                ALLOWED_CLASSES: ["hljs", "hljs-javascript", "hljs-string"], // 关键配置
+              // 3. 扩展允许的标签和类名
+              const sanitizeConfig = {
+                ADD_TAGS: ["pre", "code", "span"],
+                ADD_ATTR: ["class"],
+                ALLOWED_CLASSES: {
+                  pre: ["*"],
+                  code: ["*"],
+                  span: ["hljs-*"], // 允许所有 hljs-* 前缀的类名
+                },
                 SAFE_FOR_TEMPLATES: false,
-              });
+              };
 
-              // 确保代码块标签保留
+              // 4. 解析和净化
+              const parsed = marked.parse(raw.trim());
+              const sanitized = DOMPurify.sanitize(parsed, sanitizeConfig);
+
+              // 5. 验证输出
+              if (!sanitized) {
+                throw new Error("Sanitization resulted in empty output");
+              }
+
               return sanitized;
             } catch (error) {
-              console.error("Markdown 解析失败:", error);
-              return "<p>解析错误，请检查输入内容。</p>";
+              console.error("Markdown parsing failed:", error);
+              return `<p>解析错误：${error.message}</p>`;
             }
           },
           keyup(event) {
