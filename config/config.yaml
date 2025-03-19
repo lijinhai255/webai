@@ -8,7 +8,7 @@ knowledge_base:
 
 vector_db: # 需要提升为顶层段落
   enabled: True
-  model_name: "./models/models--BAAI--bge-large-zh-v1.5/snapshots/79e7739b6ab944e86d6171e44d24c997fc1e0116"
+  model_name: "./models"
   persistence_path: "./data/vector_db" # 绝对路径
 
 chat:
