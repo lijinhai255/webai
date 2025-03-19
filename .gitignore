@@ -6,4 +6,4 @@ data
 */__pycache__
 test_env/
 __pycache__
-models
+models/.locks/*
