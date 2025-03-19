@@ -4,11 +4,9 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt ./
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libmysqlclient-dev \
-    libgmp-dev \
-    # 添加其他需要的系统依赖项
+RUN apt-get update && apt-get install -y 
+
+# 添加其他需要的系统依赖项
 
 RUN pip install --upgrade pip
 
