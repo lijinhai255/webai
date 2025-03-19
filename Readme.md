@@ -30,4 +30,4 @@ uvicorn chat_glm4:app --reload --port 8000
 
 
 ### 镜像启动
-docker run --name webai -p 8000:8000 -d webai:latest
+docker run --name webai -p 8000:8000 -v /opt/hai/webai/models:/usr/src/app/models -d  webai:latest
