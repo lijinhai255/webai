@@ -22,3 +22,12 @@ pip uninstall urllib3
 
 # 安装 urllib3 1.26.4（与您的代码兼容版本）
 pip install urllib3==1.26.4
+
+
+### 镜像打包
+docker build -t webai:latest .
+uvicorn chat_glm4:app --reload --port 8000
+
+
+### 镜像启动
+docker run --name webai -p 8000:8000 -d webai:latest
