@@ -14,3 +14,5 @@ uvicorn
 fastapi
 langchain_huggingface
 langchain_community
+faiss-gpu
+unstructured
