@@ -1,7 +1,7 @@
 # 原配置结构
 knowledge_base:
   enabled: True
-  path: "./data/docs" # 绝对路径
+  path: "/usr/src/app/data/docs" # 绝对路径
   glob_pattern: "**/*.md"
   chunk_size: 1000
   overlap: 200
@@ -9,7 +9,7 @@ knowledge_base:
 vector_db: # 需要提升为顶层段落
   enabled: True
   model_name: "./models"
-  persistence_path: "./data/vector_db" # 绝对路径
+  persistence_path: "/usr/src/app/data/vector_db" # 绝对路径
 
 chat:
   api_key: "$ZHIPUAI_API_KEY"

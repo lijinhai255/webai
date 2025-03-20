@@ -2,7 +2,10 @@ venv
 __pycache__/
 .devcontainer
 .idea
-data
+data/vector
+data/docs/*/assets
 */__pycache__
 test_env/
 __pycache__
+myenv
+models
