@@ -1,7 +1,7 @@
 const instance = axios.create({
   // baseURL: 'http://39.105.155.161:12406/',
-  // baseURL: 'http://192.168.188.11:12406/',
-  baseURL: "http://localhost:8000/",
+  baseURL: "http://23.95.36.253:8000/",
+  // baseURL: "http://localhost:8000/",
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
