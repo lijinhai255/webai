@@ -1,6 +1,6 @@
 const instance = axios.create({
   // baseURL: 'http://39.105.155.161:12406/',
-  baseURL: "http://23.95.36.253:8000/",
+  baseURL: "http://23.95.36.253:80/",
   // baseURL: "http://localhost:8000/",
   timeout: 60000,
   changeOrigin: true, // 改变请求的来源
