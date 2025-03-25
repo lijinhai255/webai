@@ -1,7 +1,7 @@
 const instance = axios.create({
   // baseURL: 'http://39.105.155.161:12406/',
+  // baseURL: "http://23.95.36.253:80/",
   baseURL: "http://23.95.36.253:80/",
-  // baseURL: "http://localhost:8000/",
   timeout: 60000,
   changeOrigin: true, // 改变请求的来源
   pathRewrite: { "^/api": "" }, // 重写路径，去掉 `/api` 前缀
