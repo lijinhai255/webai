@@ -160,7 +160,7 @@ class ChatGLM4(LLM):
             result_parts = []
             for chunk in response:
                 if chunk.choices and chunk.choices[0].delta.content:
-                    content = chunk.choices[0].delta.content.strip()
+                    content = chunk.choices[0].delta.content
                     result_parts.append(content)
                     # 实时输出进度（每50字符打印一次）
                     if len(''.join(result_parts)) % 100 == 0:
