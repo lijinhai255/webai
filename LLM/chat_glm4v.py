@@ -18,17 +18,42 @@ class ChatGLM4V(LLM):
 
     @property
     def _llm_type(self):
-        return "ChatCogView3"
+        return "ChatGLM4V"
 
     def invoke(self, prompt: str):
-        """调用 CogView-3 进行图像生成"""
-        response = self.client.images.generate(
-            model="cogview-3-flash",
-            prompt=prompt
+        """调用 GLM-4V-Flash 进行图像理解"""
+        if isinstance(prompt, list):
+            # 尝试从消息中提取图像URL
+            for message in prompt:
+                # 如果消息中包含图像URL，将其与用户文本组合
+                if hasattr(message, 'content') and isinstance(message.content, str):
+                    prompt = message.content
+                    break
+        
+        response = self.client.chat.completions.create(
+            model="glm-4v-flash",
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
         )
-        # 直接返回生成的图像 URL
-        return AIMessage(content=response.data[0].url)
+        result = response.choices[0].message.content
+        return AIMessage(content=result)
 
     def _call(self, prompt: str, stop=None, run_manager=None):
         """实现 _call 方法，以便可以被实例化"""
         return self.invoke(prompt)
+        
+    def stream(self, prompt, config={}, history=None):
+        if history is None:
+            history = []
+        if isinstance(prompt, list):
+            prompt = prompt[-1].content  # 取最新的用户输入
+
+        history.append({"role": "user", "content": prompt})
+        response = self.client.chat.completions.create(
+            model="glm-4v-flash",
+            messages=history,
+            stream=True
+        )
+        for chunk in response:
+            yield chunk.choices[0].delta.content

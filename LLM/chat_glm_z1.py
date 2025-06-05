@@ -1,4 +1,3 @@
-# tools/chat_glm4.py
 from langchain.llms.base import LLM
 from zhipuai import ZhipuAI
 from langchain_core.messages.ai import AIMessage
@@ -9,10 +8,10 @@ from dotenv import load_dotenv
 # 加载 .env 文件
 load_dotenv()
 
-# 读取 OpenAI API 密钥 & 自定义 API 地址
-zhipuai_api_key = os.getenv("zhipuai_api_key")  # 默认值为 "EMPTY"
+# 读取 API 密钥
+zhipuai_api_key = os.getenv("zhipuai_api_key")
 
-class ChatGLM4(LLM):
+class ChatGLMZ1(LLM):
     history: List[dict] = []  # 记录对话历史
     client: Optional[ZhipuAI] = None  # 智谱 AI 客户端
 
@@ -22,7 +21,7 @@ class ChatGLM4(LLM):
 
     @property
     def _llm_type(self):
-        return "ChatGLM4"
+        return "ChatGLMZ1"
 
     def invoke(self, prompt, config={}, history=None):
         if history is None:
@@ -32,13 +31,13 @@ class ChatGLM4(LLM):
         history.append({"role": "user", "content": prompt})
 
         response = self.client.chat.completions.create(
-            model="glm-4-flash-250414",  # 修改为免费的 Flash 模型
+            model="glm-z1-flash",  # 使用免费的推理模型
             messages=history
         )
         result = response.choices[0].message.content
         return AIMessage(content=result)
 
-    def _call(self, prompt, config, history=None):
+    def _call(self, prompt, config={}, history=None):
         return self.invoke(prompt, history)
 
     def stream(self, prompt, config={}, history=None):
@@ -49,17 +48,9 @@ class ChatGLM4(LLM):
 
         history.append({"role": "user", "content": prompt})
         response = self.client.chat.completions.create(
-            model="glm-4-flash-250414",  # 修改为免费的 Flash 模型
+            model="glm-z1-flash",  # 使用免费的推理模型
             messages=history,
             stream=True
         )
         for chunk in response:
             yield chunk.choices[0].delta.content
-            
-    async def async_generate(self, user_text: str):
-        response = self.client.chat.completions.create(
-            model="glm-4-flash-250414",  # 修改为免费的 Flash 模型
-            messages=[{"role": "user", "content": user_text}],
-            stream=False
-        )
-        return response.choices[0].message.content

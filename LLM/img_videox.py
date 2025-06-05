@@ -26,15 +26,21 @@ class ChatCogVideoX(LLM):
 
     @property
     def _llm_type(self):
-        return "ChatCogVideoX"
+        return "CogVideoX-Flash"
 
-    def invoke(self, local_path: str = None, prompt: str = None) -> str:
+    def invoke(self, local_path: str = None, prompt: str = None, image_url: str = None) -> str:
         """提交图/文生视频任务并返回 task_id 或错误信息"""
         try:
-            image_url = file_to_base64(local_path) if local_path else None
+            # 优先使用本地图片路径，如果提供了则转换为base64
+            if local_path:
+                image_url = file_to_base64(local_path)
+            
+            # 如果没有提供任何图片来源，返回错误
+            if not image_url and not prompt:
+                return "❌ 请提供图片路径/URL或文本提示词"
 
             response = self.client.videos.generations(
-                model="cogvideox-2",
+                model="CogVideoX-Flash",  # 更新为免费模型名称
                 image_url=image_url,
                 prompt=prompt,
                 quality="quality",
@@ -56,7 +62,7 @@ class ChatCogVideoX(LLM):
         """
         查询视频生成状态:
           - 若成功: {"video_url": "...", "cover_url": "..."}
-          - 若仍在处理: {"error": "PROCESSIN1G"}
+          - 若仍在处理: {"error": "PROCESSING"}
           - 失败或异常: {"error": "..."}
         """
         try:

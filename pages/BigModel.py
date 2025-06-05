@@ -6,13 +6,15 @@ from LLM.chat_glm4 import ChatGLM4
 from LLM.chat_glm4v import ChatGLM4V
 from LLM.cogview3 import ChatCogView3
 from LLM.cogvideox import ChatCogVideoX
+from LLM.chat_glm_z1 import ChatGLMZ1  # 导入新添加的推理模型
 
 # ✅ 初始化 LLM
 llm_models = {
-    "GLM-4 Flash（文本）": ChatGLM4(),
-    "GLM-4V Flash（图像理解）": ChatGLM4V(),
-    "CogView-3 Flash（图像生成）": ChatCogView3(),
-    "CogVideoX Flash（视频生成）": ChatCogVideoX()
+    "GLM-4-Flash-250414（语言模型）": ChatGLM4(),
+    "GLM-4V-Flash（图像理解）": ChatGLM4V(),
+    "CogView-3-Flash（图像生成）": ChatCogView3(),
+    "CogVideoX-Flash（视频生成）": ChatCogVideoX(),
+    "GLM-Z1-Flash（推理模型）": ChatGLMZ1()
 }
 
 # ✅ Streamlit 页面布局
@@ -49,8 +51,8 @@ if user_input:
     with st.chat_message("assistant"):
         response_placeholder = st.empty()
 
-        # A) 处理文本/图像理解
-        if isinstance(selected_llm, (ChatGLM4, ChatGLM4V)):
+        # A) 处理文本/图像理解/推理模型
+        if isinstance(selected_llm, (ChatGLM4, ChatGLM4V, ChatGLMZ1)):
             response_text = ""
             for chunk in selected_llm.stream([HumanMessage(content=user_input)]):
                 response_text += str(chunk)
